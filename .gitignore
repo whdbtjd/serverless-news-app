@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+*.zip
+*.tar.gz
+
+# 환경 관련
+.env
+.venv/
+venv/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# OS/IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Lambda 배포 패키지
+package.zip
+
+# 다운로드한 패키지들 (배포용으로 묶여 있는 것)
+*.dist-info/
+*.egg-info/
+bin/
+lib/
+lib64/
+
+# 특정 써드파티 디렉토리
+requests/
+urllib3/
+idna/
+certifi/
+charset_normalizer/
+boto3/
+botocore/
+s3transfer/
+jmespath/
+trafilatura/
+dateparser/
+courlan/
+lxml/
+lxml_html_clean/
+justext/
+htmldate/
+tzdata/
+tzlocal/
+regex/
+tld/
+six.py
+six.zip
