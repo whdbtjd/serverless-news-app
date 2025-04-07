@@ -31,8 +31,14 @@ def lambda_handler(event, context):
         elif '/news/business/lists' in path:
             return get_news_by_category('business', query_parameters)
         
-        elif '/news/health/lists' in path:
-            return get_news_by_category('health', query_parameters)
+        elif '/news/entertainment/lists' in path:
+            return get_news_by_category('entertainment', query_parameters)
+        
+        elif '/news/general/lists' in path:
+            return get_news_by_category('general', query_parameters)
+        
+        elif '/news/sports/lists' in path:
+            return get_news_by_category('sports', query_parameters)
         
         # 특정 뉴스 기사 조회 (카테고리별)
         elif '/news/science/' in path and not '/lists' in path:
@@ -47,9 +53,17 @@ def lambda_handler(event, context):
             article_id = path.split('/')[-1]
             return get_news_article(article_id, 'business')
         
-        elif '/news/health/' in path and not '/lists' in path:
+        elif '/news/entertainment/' in path and not '/lists' in path:
             article_id = path.split('/')[-1]
-            return get_news_article(article_id, 'health')
+            return get_news_article(article_id, 'entertainment')
+        
+        elif '/news/general/' in path and not '/lists' in path:
+            article_id = path.split('/')[-1]
+            return get_news_article(article_id, 'general')
+        
+        elif '/news/sports/' in path and not '/lists' in path:
+            article_id = path.split('/')[-1]
+            return get_news_article(article_id, 'sports')
         
         # 경로가 매칭되지 않는 경우
         return {
