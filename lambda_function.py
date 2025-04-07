@@ -6,6 +6,7 @@ import boto3
 import requests
 import time
 import uuid
+import re
 from datetime import datetime
 
 # 필요한 패키지 설치 함수
@@ -120,7 +121,10 @@ def lambda_handler(event, context):
                                     translated_chunks.append(chunk_response.get('TranslatedText', ''))
                                 
                                 # 번역된 청크 합치기
-                                content_ko = ' '.join(translated_chunks)
+                                raw_content_ko = ' '.join(translated_chunks)
+                                
+                                # 번역된 본문을 문단으로 정리
+                                content_ko = format_content_paragraphs(raw_content_ko)
                             except Exception as e:
                                 print(f"본문 번역 오류: {str(e)}")
                     except Exception as e:
@@ -148,7 +152,7 @@ def lambda_handler(event, context):
                         'imageUrl': article.get('urlToImage', ''),
                         'publishedAt': article.get('publishedAt', ''),
                         'content': full_content if full_content else '',
-                        'content_ko': content_ko,  # 한국어 본문
+                        'content_ko': content_ko,  # 문단으로 정리된 한국어 본문
                         'timestamp': current_time,
                         'ttl': expiry_time
                     }
@@ -188,6 +192,41 @@ def clean_title(title):
     if dash_index > 0:
         return title[:dash_index]
     return title
+
+def format_content_paragraphs(text):
+    """긴 텍스트를 적절한 문단으로 나누기"""
+    if not text:
+        return ''
+    
+    # 문장 단위로 분리 (한국어 문장은 보통 '. ', '? ', '! '로 끝남)
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    
+    # 문단으로 결합 (대략 3-5개 문장을 하나의 문단으로)
+    paragraphs = []
+    current_paragraph = []
+    sentence_count = 0
+    
+    for sentence in sentences:
+        current_paragraph.append(sentence)
+        sentence_count += 1
+        
+        # 문장 길이에 따라 조정 (짧은 문장은 더 많이 그룹화)
+        sentence_len = len(sentence)
+        threshold = 5 if sentence_len < 50 else (4 if sentence_len < 100 else 3)
+        
+        if sentence_count >= threshold:
+            paragraphs.append(' '.join(current_paragraph))
+            current_paragraph = []
+            sentence_count = 0
+    
+    # 남은 문장들을 마지막 문단으로 추가
+    if current_paragraph:
+        paragraphs.append(' '.join(current_paragraph))
+    
+    # 문단 구분을 위해 이중 개행 추가
+    formatted_content = '\n\n'.join(paragraphs)
+    
+    return formatted_content
 
 def split_text(text, max_length):
     """
