@@ -11,6 +11,7 @@ from datetime import datetime
 # 필요한 패키지 설치 함수
 def install_trafilatura():
     if not os.path.exists("/tmp/trafilatura"):
+        print("첫 실행: trafilatura 설치 중...")
         install_cmd = [sys.executable, "-m", "pip", "install", "trafilatura", "-t", "/tmp/"]
         subprocess.check_call(install_cmd)
         # /tmp 경로를 Python 경로에 추가
@@ -28,8 +29,8 @@ def lambda_handler(event, context):
     import trafilatura
     
     # 환경 변수에서 API 키와 테이블 이름 가져오기
-    api_key = os.environ.get("NEWS_API_KEY")
-    table_name = os.environ.get("DYNAMODB_TABLE")
+    api_key = os.environ.get("NEWS_API_KEY")  # 환경 변수로 설정
+    table_name = os.environ.get("DYNAMODB_TABLE") #  환경 변수로 설정
     
     # DynamoDB 테이블
     table = dynamodb.Table(table_name)
@@ -37,8 +38,8 @@ def lambda_handler(event, context):
     # NewsAPI 엔드포인트 URL
     url = "https://newsapi.org/v2/top-headlines"
     
-    # 카테고리 목록
-    categories = ["technology", "business", "science", "health"]
+    # 카테고리 목록 확장
+    categories = ["business", "entertainment", "general", "science", "sports", "technology"]
     
     all_articles = []
     
@@ -47,7 +48,7 @@ def lambda_handler(event, context):
         params = {
             "category": category,
             "language": "en",
-            "pageSize": 5,
+            "pageSize": 8,
             "apiKey": api_key
         }
         
@@ -85,6 +86,8 @@ def lambda_handler(event, context):
                                     TargetLanguageCode='ko'
                                 )
                                 title_ko = title_response.get('TranslatedText', '')
+                                # 제목에서 " - 언론사" 부분 제거
+                                title_ko = clean_title(title_ko)
                             except Exception as e:
                                 print(f"제목 번역 오류: {str(e)}")
                         
@@ -100,12 +103,12 @@ def lambda_handler(event, context):
                             except Exception as e:
                                 print(f"설명 번역 오류: {str(e)}")
                         
-                        # 본문 번역
+                        # 본문 번역 (내용이 긴 경우 청크로 나누어 처리)
                         if full_content:
                             try:
                                 # Amazon Translate는 한 번에 최대 5,000자까지 처리 가능
                                 # 긴 텍스트는 청크로 분할하여 번역
-                                chunks = split_text(full_content, 4500)  # 4500자로 제한
+                                chunks = split_text(full_content, 4500)  # 여유를 두고 4500자로 제한
                                 translated_chunks = []
                                 
                                 for chunk in chunks:
@@ -116,7 +119,7 @@ def lambda_handler(event, context):
                                     )
                                     translated_chunks.append(chunk_response.get('TranslatedText', ''))
                                 
-                            
+                                # 번역된 청크 합치기
                                 content_ko = ' '.join(translated_chunks)
                             except Exception as e:
                                 print(f"본문 번역 오류: {str(e)}")
@@ -137,7 +140,7 @@ def lambda_handler(event, context):
                         'id': article_id,
                         'category': category,
                         'title': article.get('title', ''),
-                        'title_ko': title_ko,  # 한국어 제목
+                        'title_ko': title_ko,  # 언론사 정보가 제거된 한국어 제목
                         'source': article.get('source', {}).get('name', ''),
                         'description': article.get('description', ''),
                         'description_ko': description_ko,  # 한국어 설명
@@ -176,6 +179,15 @@ def lambda_handler(event, context):
             'articles': all_articles
         })
     }
+
+def clean_title(title):
+    """제목에서 언론사 정보 제거"""
+    if not title:
+        return ''
+    dash_index = title.rfind(' - ')
+    if dash_index > 0:
+        return title[:dash_index]
+    return title
 
 def split_text(text, max_length):
     """
