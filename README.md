@@ -1,6 +1,7 @@
 # serverless-news-app
 
-![news_api drawio](https://github.com/user-attachments/assets/bd4f0071-ef92-4d27-8230-e01ddff02d6b)
+![news_api drawio](https://github.com/user-attachments/assets/68651ff3-d9b1-43e0-b78b-05b8013c5ba5)
+
 
 
 
