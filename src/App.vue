@@ -10,6 +10,11 @@
 <script>
 export default {
   name: 'App'
+  data() {
+    return {
+      appTitle: import.meta.env.VITE_APP_TITLE
+    }
+  }
 }
 </script>
 
