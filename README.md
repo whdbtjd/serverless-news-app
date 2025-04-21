@@ -1,29 +1,21 @@
-# frontend_s3
+# serverless-news-app
 
-This template should help get you started developing with Vue 3 in Vite.
+![news_api drawio](https://github.com/user-attachments/assets/68651ff3-d9b1-43e0-b78b-05b8013c5ba5)
 
-## Recommended IDE Setup
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
-## Customize configuration
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+해외 뉴스 api를 활용한 클라우드 네이티브 애플리케이션 개발 중 입니다.
 
-## Project Setup
+<br>
+<br>
 
-```sh
-npm install
-```
+<b>개발일지</b>
+<br>
+<br>
+<br>
+<a href="https://velog.io/@whdbtjd/%EB%89%B4%EC%8A%A4-API%EB%A5%BC-%ED%99%9C%EC%9A%A9%ED%95%9C-%EC%84%9C%EB%B2%84%EB%A6%AC%EC%8A%A4-%EC%95%A0%ED%94%8C%EB%A6%AC%EC%BC%80%EC%9D%B4%EC%85%98-%EA%B8%B0%ED%9A%8D"> 클라우드 네이티브 애플리케이션 구현해보기 - 기획</a>
 
-### Compile and Hot-Reload for Development
+<a href="https://velog.io/@whdbtjd/%EB%89%B4%EC%8A%A4-API%EB%A5%BC-%ED%99%9C%EC%9A%A9%ED%95%9C-%EC%84%9C%EB%B2%84%EB%A6%AC%EC%8A%A4-%EC%95%A0%ED%94%8C%EB%A6%AC%EC%BC%80%EC%9D%B4%EC%85%98-%EA%B5%AC%ED%98%84-AWS-Lambda-%EB%B0%8F-Dynamodb-%EA%B5%AC%EC%84%B1"> 클라우드 네이티브 애플리케이션 구현해보기 - Lambda 및 DynamoDB구성</a>
 
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
+<a href="https://velog.io/@whdbtjd/클라우드-네이티브-애플리케이션-구현해보기-Amazon-API-Gateway-구성">클라우드 네이티브 애플리케이션 구현해보기 - Amazon API Gateway 구성</a>
