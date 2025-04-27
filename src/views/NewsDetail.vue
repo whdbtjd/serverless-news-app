@@ -1,5 +1,6 @@
 <template>
   <div class="news-detail-page">
+    <!-- 왼쪽: 기사 상세 내용 -->
     <div class="news-detail">
       <div v-if="isLoading" class="loading">
         <div class="spinner"></div>
@@ -46,14 +47,25 @@
         </div>
       </div>
     </div>
+    
+    <!-- 오른쪽: 관련 기사 목록 -->
+    <div class="related-news-sidebar">
+      <related-news-list 
+        :currentCategory="category"
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
+import RelatedNewsList from '@/components/RelatedNewsList.vue'
 
 export default {
   name: 'NewsDetail',
+  components: {
+    RelatedNewsList
+  },
   props: {
     category: {
       type: String,
@@ -109,9 +121,21 @@ export default {
 
 <style scoped>
 .news-detail-page {
+  display: flex;
   padding: 20px;
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
+  gap: 20px;
+}
+
+.news-detail {
+  flex: 1;
+  min-width: 0;
+}
+
+.related-news-sidebar {
+  width: 300px;
+  flex-shrink: 0;
 }
 
 .loading, .error, .not-found {
@@ -227,5 +251,20 @@ export default {
 
 .original-link:hover, .back-link:hover {
   opacity: 0.9;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .news-detail-page {
+    flex-direction: column;
+  }
+  
+  .news-detail {
+    margin-bottom: 20px;
+  }
+  
+  .related-news-sidebar {
+    width: 100%;
+  }
 }
 </style>
