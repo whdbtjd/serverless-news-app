@@ -37,15 +37,34 @@ export default {
   actions: {
     async fetchAllNews({ commit }) {
       commit('SET_LOADING', true)
+      commit('SET_ERROR', null)
       try {
         const response = await api.getAllNews()
         
-        // 중복 제거 로직 추가
+        // 중복 제거 및 데이터 정제 로직
         const uniqueNewsMap = new Map()
         response.data.news.forEach(article => {
+          // 유효하지 않은 기사 필터링
+          if (!article || !article.title || !article.id) return
+          
           // 제목을 기준으로 중복 제거
-          const key = article.title
-          if (!uniqueNewsMap.has(key)) {
+          const key = article.title.trim().toLowerCase()
+          
+          // 이미 존재하는 기사라면 더 많은 정보가 있는 기사를 선택
+          if (uniqueNewsMap.has(key)) {
+            const existingArticle = uniqueNewsMap.get(key)
+            
+            // 이미지 URL이 있는 기사 우선
+            if (!existingArticle.imageUrl && article.imageUrl) {
+              uniqueNewsMap.set(key, article)
+            }
+            
+            // 설명이 더 길거나 내용이 더 많은 기사 우선
+            if ((article.description && article.description.length > (existingArticle.description?.length || 0)) || 
+                (article.content && article.content.length > (existingArticle.content?.length || 0))) {
+              uniqueNewsMap.set(key, article)
+            }
+          } else {
             uniqueNewsMap.set(key, article)
           }
         })
@@ -53,12 +72,17 @@ export default {
         // Map에서 값만 추출하여 배열로 변환
         const uniqueNews = Array.from(uniqueNewsMap.values())
         
-        // 최신순 정렬
-        uniqueNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+        // 최신순 정렬 (날짜가 없는 경우 처리)
+        uniqueNews.sort((a, b) => {
+          const dateA = a.publishedAt ? new Date(a.publishedAt) : new Date(0)
+          const dateB = b.publishedAt ? new Date(b.publishedAt) : new Date(0)
+          return dateB - dateA
+        })
         
         commit('SET_ALL_NEWS', uniqueNews)
       } catch (error) {
         commit('SET_ERROR', error)
+        console.error('뉴스 불러오기 오류:', error)
       } finally {
         commit('SET_LOADING', false)
       }
@@ -66,24 +90,45 @@ export default {
     
     async fetchNewsByCategory({ commit }, category) {
       commit('SET_LOADING', true)
+      commit('SET_ERROR', null)
       try {
         const response = await api.getNewsByCategory(category)
         
-        // 카테고리별 뉴스에도 중복 제거 로직 추가
+        // 중복 제거 및 데이터 정제 로직 (위와 유사)
         const uniqueNewsMap = new Map()
         response.data.news.forEach(article => {
-          const key = article.title
-          if (!uniqueNewsMap.has(key)) {
+          if (!article || !article.title || !article.id) return
+          
+          const key = article.title.trim().toLowerCase()
+          
+          if (uniqueNewsMap.has(key)) {
+            const existingArticle = uniqueNewsMap.get(key)
+            
+            if (!existingArticle.imageUrl && article.imageUrl) {
+              uniqueNewsMap.set(key, article)
+            }
+            
+            if ((article.description && article.description.length > (existingArticle.description?.length || 0)) || 
+                (article.content && article.content.length > (existingArticle.content?.length || 0))) {
+              uniqueNewsMap.set(key, article)
+            }
+          } else {
             uniqueNewsMap.set(key, article)
           }
         })
         
         const uniqueNews = Array.from(uniqueNewsMap.values())
-        uniqueNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+        
+        uniqueNews.sort((a, b) => {
+          const dateA = a.publishedAt ? new Date(a.publishedAt) : new Date(0)
+          const dateB = b.publishedAt ? new Date(b.publishedAt) : new Date(0)
+          return dateB - dateA
+        })
         
         commit('SET_CATEGORY_NEWS', uniqueNews)
       } catch (error) {
         commit('SET_ERROR', error)
+        console.error('카테고리별 뉴스 불러오기 오류:', error)
       } finally {
         commit('SET_LOADING', false)
       }
@@ -91,13 +136,26 @@ export default {
     
     async fetchNewsDetail({ commit, dispatch }, { category, id }) {
       commit('SET_LOADING', true)
+      commit('SET_ERROR', null)
       try {
         const response = await api.getNewsDetail(category, id)
-        commit('SET_CURRENT_ARTICLE', response.data.article)
+        
+        // 데이터 정제
+        const article = response.data.article
+        
+        // 필수 필드 확인 및 기본값 설정
+        if (article) {
+          if (!article.description) article.description = article.content?.slice(0, 150) || ''
+          if (!article.publishedAt) article.publishedAt = new Date().toISOString()
+        }
+        
+        commit('SET_CURRENT_ARTICLE', article)
+        
         // 기사 상세 정보를 가져온 후 관련 기사도 함께 가져옴
         dispatch('fetchRelatedNews', { category, id })
       } catch (error) {
         commit('SET_ERROR', error)
+        console.error('뉴스 상세 정보 불러오기 오류:', error)
       } finally {
         commit('SET_LOADING', false)
       }
@@ -126,12 +184,15 @@ export default {
         // 중복 제거 (제목 기준)
         const uniqueNewsMap = new Map()
         combinedNews.forEach(article => {
+          // 유효성 검사
+          if (!article || !article.title || !article.id) return
+          
           // 현재 기사는 제외
           if (article.id === id) {
             return
           }
           
-          const key = article.title
+          const key = article.title.trim().toLowerCase()
           if (!uniqueNewsMap.has(key)) {
             uniqueNewsMap.set(key, article)
           }
@@ -141,9 +202,13 @@ export default {
         const filteredNews = Array.from(uniqueNewsMap.values())
         
         // 최신순 정렬
-        filteredNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+        filteredNews.sort((a, b) => {
+          const dateA = a.publishedAt ? new Date(a.publishedAt) : new Date(0)
+          const dateB = b.publishedAt ? new Date(b.publishedAt) : new Date(0)
+          return dateB - dateA
+        })
         
-        // 기사 개수 제한 (필요한 만큼 조정)
+        // 기사 개수 제한 (10개)
         const relatedNews = filteredNews.slice(0, 10)
         
         commit('SET_RELATED_NEWS', relatedNews)
