@@ -1,5 +1,8 @@
 import api from '@/services/api'
 
+// API 응답 타임아웃 설정
+const API_TIMEOUT = 10000
+
 export default {
   namespaced: true,
   state: () => ({
@@ -9,7 +12,12 @@ export default {
     relatedNews: [],
     loading: false,
     loadingRelated: false,
-    error: null
+    error: null,
+    lastFetchTime: {
+      all: null,
+      category: {},
+      detail: {}
+    }
   }),
   mutations: {
     SET_ALL_NEWS(state, news) {
@@ -32,17 +40,46 @@ export default {
     },
     SET_ERROR(state, error) {
       state.error = error
+    },
+    SET_LAST_FETCH_TIME(state, { type, id, time }) {
+      if (type === 'all') {
+        state.lastFetchTime.all = time
+      } else if (type === 'category') {
+        state.lastFetchTime.category[id] = time
+      } else if (type === 'detail') {
+        state.lastFetchTime.detail[id] = time
+      }
     }
   },
   actions: {
-    async fetchAllNews({ commit }) {
+    async fetchAllNews({ commit, state }) {
+      // 캐싱 로직: 최근 5분 이내에 불러온 경우 다시 불러오지 않음
+      const now = Date.now()
+      const fiveMinutes = 5 * 60 * 1000
+      
+      if (state.lastFetchTime.all && (now - state.lastFetchTime.all < fiveMinutes) && state.allNews.length > 0) {
+        return
+      }
+      
       commit('SET_LOADING', true)
       commit('SET_ERROR', null)
+      
       try {
-        const response = await api.getAllNews()
+        // API 호출 타임아웃 설정
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('요청 시간이 초과되었습니다.')), API_TIMEOUT)
+        })
+        
+        const responsePromise = api.getAllNews()
+        const response = await Promise.race([responsePromise, timeoutPromise])
         
         // 중복 제거 및 데이터 정제 로직
         const uniqueNewsMap = new Map()
+        
+        if (!response.data || !response.data.news || !Array.isArray(response.data.news)) {
+          throw new Error('API 응답 형식이 올바르지 않습니다.')
+        }
+        
         response.data.news.forEach(article => {
           // 유효하지 않은 기사 필터링
           if (!article || !article.title || !article.id) return
@@ -80,6 +117,7 @@ export default {
         })
         
         commit('SET_ALL_NEWS', uniqueNews)
+        commit('SET_LAST_FETCH_TIME', { type: 'all', time: now })
       } catch (error) {
         commit('SET_ERROR', error)
         console.error('뉴스 불러오기 오류:', error)
@@ -88,11 +126,31 @@ export default {
       }
     },
     
-    async fetchNewsByCategory({ commit }, category) {
+    async fetchNewsByCategory({ commit, state }, category) {
+      // 캐싱 로직
+      const now = Date.now()
+      const fiveMinutes = 5 * 60 * 1000
+      
+      if (state.lastFetchTime.category[category] && 
+          (now - state.lastFetchTime.category[category] < fiveMinutes) && 
+          state.categoryNews.length > 0) {
+        return
+      }
+      
       commit('SET_LOADING', true)
       commit('SET_ERROR', null)
+      
       try {
-        const response = await api.getNewsByCategory(category)
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('요청 시간이 초과되었습니다.')), API_TIMEOUT)
+        })
+        
+        const responsePromise = api.getNewsByCategory(category)
+        const response = await Promise.race([responsePromise, timeoutPromise])
+        
+        if (!response.data || !response.data.news || !Array.isArray(response.data.news)) {
+          throw new Error('API 응답 형식이 올바르지 않습니다.')
+        }
         
         // 중복 제거 및 데이터 정제 로직 (위와 유사)
         const uniqueNewsMap = new Map()
@@ -126,6 +184,7 @@ export default {
         })
         
         commit('SET_CATEGORY_NEWS', uniqueNews)
+        commit('SET_LAST_FETCH_TIME', { type: 'category', id: category, time: now })
       } catch (error) {
         commit('SET_ERROR', error)
         console.error('카테고리별 뉴스 불러오기 오류:', error)
@@ -134,11 +193,34 @@ export default {
       }
     },
     
-    async fetchNewsDetail({ commit, dispatch }, { category, id }) {
+    async fetchNewsDetail({ commit, dispatch, state }, { category, id }) {
+      // 캐싱 로직
+      const now = Date.now()
+      const fiveMinutes = 5 * 60 * 1000
+      const cacheKey = `${category}-${id}`
+      
+      if (state.lastFetchTime.detail[cacheKey] && 
+          (now - state.lastFetchTime.detail[cacheKey] < fiveMinutes) && 
+          state.currentArticle && state.currentArticle.id === id) {
+        // 관련 기사만 다시 가져옴
+        dispatch('fetchRelatedNews', { category, id })
+        return
+      }
+      
       commit('SET_LOADING', true)
       commit('SET_ERROR', null)
+      
       try {
-        const response = await api.getNewsDetail(category, id)
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('요청 시간이 초과되었습니다.')), API_TIMEOUT)
+        })
+        
+        const responsePromise = api.getNewsDetail(category, id)
+        const response = await Promise.race([responsePromise, timeoutPromise])
+        
+        if (!response.data || !response.data.article) {
+          throw new Error('API 응답 형식이 올바르지 않습니다.')
+        }
         
         // 데이터 정제
         const article = response.data.article
@@ -150,6 +232,7 @@ export default {
         }
         
         commit('SET_CURRENT_ARTICLE', article)
+        commit('SET_LAST_FETCH_TIME', { type: 'detail', id: cacheKey, time: now })
         
         // 기사 상세 정보를 가져온 후 관련 기사도 함께 가져옴
         dispatch('fetchRelatedNews', { category, id })
@@ -163,23 +246,42 @@ export default {
     
     async fetchRelatedNews({ commit, state }, { category, id }) {
       commit('SET_LOADING_RELATED', true)
+      
       try {
         // 1. 같은 카테고리의 기사 가져오기
-        const sameCategory = await api.getNewsByCategory(category)
+        let sameCategory = []
+        
+        if (state.categoryNews.length > 0 && state.lastFetchTime.category[category]) {
+          // 이미 카테고리 뉴스가 있으면 재사용
+          sameCategory = state.categoryNews
+        } else {
+          try {
+            const response = await api.getNewsByCategory(category)
+            sameCategory = response.data.news || []
+          } catch (error) {
+            console.error('관련 기사(카테고리) 로딩 오류:', error)
+            sameCategory = []
+          }
+        }
         
         // 2. 다른 카테고리의 기사도 가져오기 (모든 뉴스를 가져오거나, 특정 카테고리 추가)
         let allNews = []
         
         // 2-1. 전체 뉴스 데이터가 이미 있으면 활용, 없으면 가져오기
-        if (state.allNews.length === 0) {
-          const allNewsResponse = await api.getAllNews()
-          allNews = allNewsResponse.data.news
-        } else {
+        if (state.allNews.length > 0 && state.lastFetchTime.all) {
           allNews = state.allNews
+        } else {
+          try {
+            const allNewsResponse = await api.getAllNews()
+            allNews = allNewsResponse.data.news || []
+          } catch (error) {
+            console.error('관련 기사(전체) 로딩 오류:', error)
+            allNews = []
+          }
         }
         
         // 3. 전체 뉴스 중에서 중복 제거 및 현재 기사 제외
-        let combinedNews = [...sameCategory.data.news, ...allNews]
+        let combinedNews = [...sameCategory, ...allNews]
         
         // 중복 제거 (제목 기준)
         const uniqueNewsMap = new Map()
@@ -214,6 +316,7 @@ export default {
         commit('SET_RELATED_NEWS', relatedNews)
       } catch (error) {
         console.error('관련 기사 로딩 오류:', error)
+        commit('SET_RELATED_NEWS', [])
       } finally {
         commit('SET_LOADING_RELATED', false)
       }

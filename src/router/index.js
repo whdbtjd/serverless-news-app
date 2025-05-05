@@ -11,13 +11,15 @@ const routes = [
   {
     path: '/category/:category',
     name: 'CategoryNews',
-    component: () => import('../views/CategoryNews.vue'),
+    // 지연 로딩으로 코드 스플리팅
+    component: () => import(/* webpackChunkName: "category" */ '../views/CategoryNews.vue'),
     props: true
   },
   {
     path: '/news/:category/:id',
     name: 'NewsDetail',
-    component: () => import('../views/NewsDetail.vue'),
+    // 지연 로딩으로 코드 스플리팅
+    component: () => import(/* webpackChunkName: "detail" */ '../views/NewsDetail.vue'),
     props: true
   }
 ]
