@@ -2,7 +2,11 @@
   <div class="app">
     <Header />
     <main class="container">
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </main>
   </div>
 </template>
@@ -19,38 +23,23 @@ export default {
 </script>
 
 <style>
-:root {
-  --primary-color: #1a2b4a;
-  --secondary-color: #ffffff;
-  --card-bg-color: #12203a;
-  --accent-color: #3366cc;
-}
-
-body {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #0a1529 100%);
-  color: var(--secondary-color);
-  font-family: 'Noto Sans KR', sans-serif;
-  margin: 0;
-  padding: 0;
+.app {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+main {
+  flex: 1;
+  padding: 20px 0;
 }
 
-.news-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+/* 페이지 트랜지션 효과 */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
 }
 
-@media (max-width: 768px) {
-  .news-grid {
-    grid-template-columns: 1fr;
-  }
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 </style>
