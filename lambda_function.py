@@ -49,7 +49,7 @@ def lambda_handler(event, context):
         params = {
             "category": category,
             "language": "en",
-            "pageSize": 8,
+            "pageSize": 4,
             "apiKey": api_key
         }
         
