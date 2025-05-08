@@ -1,33 +1,33 @@
 <template>
-    <div class="related-news">
-      <h3 class="related-title">관련 기사</h3>
-      
-      <div v-if="isLoadingRelated" class="loading">
-        로딩 중...
-      </div>
-      
-      <div v-else-if="relatedNews.length === 0" class="no-related">
-        관련 기사가 없습니다.
-      </div>
-      
-      <div v-else class="related-list">
-        <div v-for="article in relatedNews" :key="article.id" class="related-item">
-          <router-link
-             :to="`/news/${article.category}/${article.id}`"
-             class="related-link"
-            @click="handleRelatedClick"
-          >
-            <div class="related-image" v-if="article.imageUrl">
-              <img :src="article.imageUrl" :alt="article.title" />
-            </div>
-            <div class="related-info">
-              <span class="related-article-title">{{ article.title }}</span>
-              <span class="related-date">{{ formatDate(article.publishedAt) }}</span>
-            </div>
-          </router-link>
-        </div>
+  <div class="related-news">
+    <h3 class="related-title">관련 기사</h3>
+    
+    <div v-if="isLoadingRelated" class="loading">
+      로딩 중...
+    </div>
+    
+    <div v-else-if="relatedNews.length === 0" class="no-related">
+      관련 기사가 없습니다.
+    </div>
+    
+    <div v-else class="related-list">
+      <div v-for="article in relatedNews" :key="article.id" class="related-item">
+        <router-link 
+          :to="`/news/${article.category}/${article.id}`" 
+          class="related-link"
+          @click="handleRelatedClick"
+        >
+          <div class="related-image" v-if="article.imageUrl">
+            <img :src="article.imageUrl" :alt="article.title" />
+          </div>
+          <div class="related-info">
+            <span class="related-article-title">{{ article.title }}</span>
+            <span class="related-date">{{ formatDate(article.publishedAt) }}</span>
+          </div>
+        </router-link>
       </div>
     </div>
+  </div>
 </template>
 
 <script>

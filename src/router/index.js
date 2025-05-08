@@ -6,28 +6,28 @@ const routes = [
     path: '/',
     name: 'Home',
     component: Home,
+    // 홈 페이지에 접속했을 때 전체 뉴스가 기본으로 표시되도록
     meta: { category: 'all' }
   },
   {
     path: '/category/:category',
     name: 'CategoryNews',
-    // 지연 로딩으로 코드 스플리팅
-    component: () => import(/* webpackChunkName: "category" */ '../views/CategoryNews.vue'),
+    component: () => import('../views/CategoryNews.vue'),
     props: true
   },
   {
     path: '/news/:category/:id',
     name: 'NewsDetail',
-    // 지연 로딩으로 코드 스플리팅
-    component: () => import(/* webpackChunkName: "detail" */ '../views/NewsDetail.vue'),
+    component: () => import('../views/NewsDetail.vue'),
     props: true
   }
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL), // createWebHistory에서 createWebHashHistory로 변경
   routes,
   scrollBehavior() {
+    // 페이지 전환 시 항상 맨 위로 스크롤
     return { top: 0 }
   }
 })

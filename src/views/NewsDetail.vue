@@ -3,20 +3,15 @@
     <!-- 왼쪽: 기사 상세 내용 -->
     <div class="news-detail">
       <div v-if="isLoading" class="loading">
-        <div class="spinner"></div>
         로딩 중...
       </div>
       
       <div v-else-if="hasError" class="error">
-        <div class="error-icon">⚠️</div>
         기사를 불러오는 중 오류가 발생했습니다.
-        <button @click="loadArticle" class="retry-button">다시 시도</button>
       </div>
       
       <div v-else-if="!currentArticle" class="not-found">
-        <div class="not-found-icon">🔍</div>
-        <p>해당 기사를 찾을 수 없습니다.</p>
-        <router-link :to="backLink" class="back-button">목록으로 돌아가기</router-link>
+        해당 기사를 찾을 수 없습니다.
       </div>
       
       <div v-else class="article">
@@ -33,8 +28,7 @@
         </div>
         
         <div class="article-content">
-          <p class="article-description">{{ currentArticle.description }}</p>
-          <div class="article-body">{{ currentArticle.content }}</div>
+          <p class="article-description">{{ currentArticle.description }}</p><div class="article-body">{{ currentArticle.content }}</div>
         </div>
         
         <div class="article-actions">
@@ -91,6 +85,7 @@ export default {
     ...mapActions('news', ['fetchNewsDetail']),
     
     loadArticle() {
+      // 컴포넌트 생성 시와 경로 변경 시 호출
       this.fetchNewsDetail({ 
         category: this.$route.params.category || this.category, 
         id: this.$route.params.id || this.id 
@@ -110,7 +105,9 @@ export default {
     }
   },
   watch: {
+    // URL 경로 자체를 감시
     '$route'(to, from) {
+      // 경로가 변경됐지만 같은 컴포넌트를 사용할 때(관련 기사 클릭 시)
       if (to.name === from.name && (to.params.id !== from.params.id || to.params.category !== from.params.category)) {
         this.loadArticle()
       }
@@ -130,53 +127,18 @@ export default {
 
 .news-detail {
   flex: 1;
-  min-width: 0;
+  min-width: 0; /* flexbox 내에서 너비 축소 가능하게 설정 */
 }
 
 .related-news-sidebar {
   width: 300px;
-  flex-shrink: 0;
+  flex-shrink: 0; /* 화면이 좁아져도 크기 유지 */
 }
 
 .loading, .error, .not-found {
   text-align: center;
   padding: 50px 0;
   color: var(--secondary-color);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: var(--accent-color);
-  animation: spin 1s ease-in-out infinite;
-  margin-bottom: 15px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.error-icon, .not-found-icon {
-  font-size: 32px;
-  margin-bottom: 15px;
-}
-
-.retry-button, .back-button {
-  margin-top: 15px;
-  padding: 8px 16px;
-  background-color: var(--accent-color);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
 }
 
 .article {
@@ -222,7 +184,7 @@ export default {
 .article-body {
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.8);
-  white-space: pre-line;
+  white-space: pre-line; /* 개행 문자 인식 */
 }
 
 .article-actions {

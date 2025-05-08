@@ -11,9 +11,7 @@
            v-model="searchQuery"
           @keyup.enter="handleSearch"
         />
-        <button @click="handleSearch">
-          <span class="search-icon">🔍</span>
-        </button>
+        <button @click="handleSearch">검색</button>
       </div>
     </div>
     <nav class="category-nav">
@@ -42,20 +40,18 @@ export default {
     }
   },
   mounted() {
+    // 화면 크기 변경 이벤트 리스너 추가
     window.addEventListener('resize', this.onResize);
     this.onResize();
-    
-    // URL에서 검색어 가져오기
-    if (this.$route.query.search) {
-      this.searchQuery = this.$route.query.search
-    }
   },
   beforeUnmount() {
+    // 컴포넌트 제거 시 이벤트 리스너 제거
     window.removeEventListener('resize', this.onResize);
   },
   methods: {
     handleSearch() {
       if (this.searchQuery.trim()) {
+        // 검색 기능 - 현재는 API에 검색 기능이 없으므로 프론트에서 필터링
         this.$router.push({
           path: '/',
           query: { search: this.searchQuery }
@@ -73,10 +69,6 @@ export default {
 .header {
   background-color: var(--primary-color);
   color: var(--secondary-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  position: sticky;
-  top: 0;
-  z-index: 100;
 }
 
 .header-container {
@@ -95,18 +87,10 @@ export default {
 .logo a {
   color: var(--secondary-color);
   text-decoration: none;
-  transition: color 0.2s;
-}
-
-.logo a:hover {
-  color: var(--accent-color);
 }
 
 .search-box {
   display: flex;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .search-box input {
@@ -114,7 +98,6 @@ export default {
   border: none;
   border-radius: 4px 0 0 4px;
   min-width: 250px;
-  font-size: 14px;
 }
 
 .search-box button {
@@ -124,21 +107,11 @@ export default {
   color: white;
   cursor: pointer;
   border-radius: 0 4px 4px 0;
-  transition: background-color 0.2s;
-}
-
-.search-box button:hover {
-  background-color: #2255bb;
-}
-
-.search-icon {
-  font-size: 16px;
 }
 
 .category-nav {
   background-color: rgba(0, 0, 0, 0.2);
   padding: 10px 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .category-nav ul {
@@ -148,12 +121,12 @@ export default {
   padding: 0;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 10px; /* 간격 균등하게 설정 */
 }
 
 .category-nav li {
   position: relative;
-  flex: 0 1 auto;
+  flex: 0 1 auto; /* 필요에 따라 크기 조절 */
 }
 
 .category-nav a {
@@ -163,7 +136,7 @@ export default {
   display: block;
   padding: 6px 10px;
   border-radius: 4px;
-  transition: all 0.2s;
+  transition: background-color 0.2s;
 }
 
 .category-nav a:hover {
@@ -174,9 +147,9 @@ export default {
   color: var(--accent-color);
   font-weight: bold;
   background-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* 반응형 스타일 */
 @media (max-width: 768px) {
   .header-container {
     flex-direction: column;
@@ -213,6 +186,7 @@ export default {
   }
 }
 
+/* 더 작은 모바일 화면용 */
 @media (max-width: 480px) {
   .category-nav ul {
     display: grid;
@@ -230,6 +204,7 @@ export default {
   }
 }
 
+/* 초소형 화면용 */
 @media (max-width: 360px) {
   .category-nav ul {
     grid-template-columns: repeat(3, 1fr);
