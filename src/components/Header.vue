@@ -15,8 +15,8 @@
       </div>
     </div>
     <nav class="category-nav">
-      <div class="container">
-        <ul>
+      <div class="container category-container">
+        <ul class="category-list">
           <li><router-link to="/">전체</router-link></li>
           <li><router-link to="/category/business">경제</router-link></li>
           <li><router-link to="/category/technology">기술</router-link></li>
@@ -25,6 +25,15 @@
           <li><router-link to="/category/general">일반</router-link></li>
           <li><router-link to="/category/sports">스포츠</router-link></li>
         </ul>
+        
+        <div class="auth-container">
+          <div class="login-form">
+            <input type="text" placeholder="아이디" v-model="userId" />
+            <input type="password" placeholder="비밀번호" v-model="userPassword" />
+            <button class="login-btn" @click="handleLogin">로그인</button>
+          </div>
+          <button class="signup-btn" @click="goToSignup">회원가입</button>
+        </div>
       </div>
     </nav>
   </header>
@@ -36,6 +45,8 @@ export default {
   data() {
     return {
       searchQuery: '',
+      userId: '',
+      userPassword: '',
       windowWidth: window.innerWidth
     }
   },
@@ -57,6 +68,18 @@ export default {
           query: { search: this.searchQuery }
         })
       }
+    },
+    handleLogin() {
+      // 로그인 기능 구현 예정
+      console.log('로그인 시도:', this.userId, this.userPassword);
+      // 임시 알림
+      alert('로그인 기능 구현 예정입니다.');
+    },
+    goToSignup() {
+      // 회원가입 페이지로 이동 (추후 구현)
+      console.log('회원가입 페이지로 이동');
+      // 임시 알림
+      alert('회원가입 기능 구현 예정입니다.');
     },
     onResize() {
       this.windowWidth = window.innerWidth;
@@ -114,19 +137,25 @@ export default {
   padding: 10px 0;
 }
 
-.category-nav ul {
+.category-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.category-list {
   display: flex;
   list-style: none;
   margin: 0;
   padding: 0;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px; /* 간격 균등하게 설정 */
+  gap: 10px;
+  justify-content: flex-start;
 }
 
 .category-nav li {
   position: relative;
-  flex: 0 1 auto; /* 필요에 따라 크기 조절 */
+  flex: 0 0 auto;
 }
 
 .category-nav a {
@@ -149,7 +178,65 @@ export default {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
+.auth-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-form {
+  display: flex;
+  gap: 8px;
+}
+
+.login-form input {
+  padding: 6px 8px;
+  border: none;
+  border-radius: 4px;
+  width: 120px;
+}
+
+.login-btn, .signup-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.login-btn {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.signup-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--secondary-color);
+}
+
+.login-btn:hover, .signup-btn:hover {
+  opacity: 0.9;
+}
+
 /* 반응형 스타일 */
+@media (max-width: 1024px) {
+  .category-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .category-list {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .auth-container {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 768px) {
   .header-container {
     flex-direction: column;
@@ -165,30 +252,19 @@ export default {
     flex-grow: 1;
   }
   
-  .category-nav {
-    width: 100%;
+  .login-form {
+    flex-wrap: wrap;
+    justify-content: center;
   }
   
-  .category-nav ul {
-    justify-content: space-between;
-    width: 100%;
-    padding: 0 10px;
-  }
-  
-  .category-nav li {
-    margin: 3px 0;
-  }
-  
-  .category-nav a {
-    font-size: 0.9rem;
-    padding: 5px 8px;
-    text-align: center;
+  .login-form input {
+    width: 100px;
   }
 }
 
 /* 더 작은 모바일 화면용 */
 @media (max-width: 480px) {
-  .category-nav ul {
+  .category-list {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 5px;
@@ -202,12 +278,25 @@ export default {
     font-size: 0.85rem;
     padding: 5px 2px;
   }
+  
+  .auth-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .login-form {
+    width: 100%;
+  }
 }
 
 /* 초소형 화면용 */
 @media (max-width: 360px) {
-  .category-nav ul {
+  .category-list {
     grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .login-form input {
+    width: 80px;
   }
 }
 </style>
