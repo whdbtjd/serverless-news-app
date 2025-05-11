@@ -199,6 +199,7 @@ export default {
   white-space: nowrap;
   position: relative;
   letter-spacing: 0.5px;
+  width: 100%;
 }
 
 .category-nav a:hover {
@@ -273,7 +274,6 @@ export default {
 .signup-btn {
   background-color: rgba(255, 255, 255, 0.2);
   color: var(--secondary-color);
-  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .login-btn:hover, .signup-btn:hover {
