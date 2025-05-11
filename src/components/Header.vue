@@ -16,23 +16,25 @@
     </div>
     <nav class="category-nav">
       <div class="container category-container">
-        <ul class="category-list">
-          <li><router-link to="/">전체</router-link></li>
-          <li><router-link to="/category/business">경제</router-link></li>
-          <li><router-link to="/category/technology">기술</router-link></li>
-          <li><router-link to="/category/science">과학</router-link></li>
-          <li><router-link to="/category/entertainment">엔터테인먼트</router-link></li>
-          <li><router-link to="/category/general">일반</router-link></li>
-          <li><router-link to="/category/sports">스포츠</router-link></li>
-        </ul>
-        
-        <div class="auth-container">
-          <div class="login-form">
-            <input type="text" placeholder="아이디" v-model="userId" />
-            <input type="password" placeholder="비밀번호" v-model="userPassword" />
-            <button class="login-btn" @click="handleLogin">로그인</button>
+        <div class="nav-scroll-container">
+          <ul class="category-list">
+            <li><router-link to="/">전체</router-link></li>
+            <li><router-link to="/category/business">경제</router-link></li>
+            <li><router-link to="/category/technology">기술</router-link></li>
+            <li><router-link to="/category/science">과학</router-link></li>
+            <li><router-link to="/category/entertainment">엔터테인먼트</router-link></li>
+            <li><router-link to="/category/general">일반</router-link></li>
+            <li><router-link to="/category/sports">스포츠</router-link></li>
+          </ul>
+          
+          <div class="auth-container">
+            <div class="login-form">
+              <input type="text" placeholder="아이디" v-model="userId" />
+              <input type="password" placeholder="비밀번호" v-model="userPassword" />
+              <button class="login-btn" @click="handleLogin">로그인</button>
+            </div>
+            <button class="signup-btn" @click="goToSignup">회원가입</button>
           </div>
-          <button class="signup-btn" @click="goToSignup">회원가입</button>
         </div>
       </div>
     </nav>
@@ -135,12 +137,29 @@ export default {
 .category-nav {
   background-color: rgba(0, 0, 0, 0.2);
   padding: 10px 0;
+  width: 100%;
 }
 
 .category-container {
+  width: 100%;
+}
+
+.nav-scroll-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  -ms-overflow-style: none;  /* IE와 Edge */
+  scrollbar-width: none;  /* Firefox */
+  padding-bottom: 5px;
+}
+
+/* Chrome, Safari, Opera에서 스크롤바 숨기기 */
+.nav-scroll-container::-webkit-scrollbar {
+  display: none;
 }
 
 .category-list {
@@ -148,9 +167,10 @@ export default {
   list-style: none;
   margin: 0;
   padding: 0;
-  flex-wrap: wrap;
   gap: 10px;
   justify-content: flex-start;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .category-nav li {
@@ -166,6 +186,7 @@ export default {
   padding: 6px 10px;
   border-radius: 4px;
   transition: background-color 0.2s;
+  white-space: nowrap;
 }
 
 .category-nav a:hover {
@@ -182,6 +203,8 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
+  margin-left: 15px;
 }
 
 .login-form {
@@ -203,6 +226,7 @@ export default {
   cursor: pointer;
   font-weight: 500;
   transition: background-color 0.2s;
+  white-space: nowrap;
 }
 
 .login-btn {
@@ -220,23 +244,6 @@ export default {
 }
 
 /* 반응형 스타일 */
-@media (max-width: 1024px) {
-  .category-container {
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .category-list {
-    justify-content: center;
-    width: 100%;
-  }
-  
-  .auth-container {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
 @media (max-width: 768px) {
   .header-container {
     flex-direction: column;
@@ -252,11 +259,6 @@ export default {
     flex-grow: 1;
   }
   
-  .login-form {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
   .login-form input {
     width: 100px;
   }
@@ -264,37 +266,6 @@ export default {
 
 /* 더 작은 모바일 화면용 */
 @media (max-width: 480px) {
-  .category-list {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 5px;
-  }
-  
-  .category-nav li {
-    width: 100%;
-  }
-  
-  .category-nav a {
-    font-size: 0.85rem;
-    padding: 5px 2px;
-  }
-  
-  .auth-container {
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .login-form {
-    width: 100%;
-  }
-}
-
-/* 초소형 화면용 */
-@media (max-width: 360px) {
-  .category-list {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
   .login-form input {
     width: 80px;
   }
