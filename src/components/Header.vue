@@ -138,6 +138,9 @@ export default {
   background-color: rgba(0, 0, 0, 0.2);
   padding: 10px 0;
   width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .category-container {
@@ -168,14 +171,21 @@ export default {
   margin: 0;
   padding: 0;
   gap: 10px;
-  justify-content: flex-start;
   flex-wrap: nowrap;
-  flex-shrink: 0;
+  flex: 1;
+  justify-content: space-between;
+  position: relative;
+  padding-right: 0;
+}
+
+.category-list::after {
+  display: none; /* 구분선 제거 */
 }
 
 .category-nav li {
   position: relative;
-  flex: 0 0 auto;
+  flex: 1;
+  text-align: center;
 }
 
 .category-nav a {
@@ -183,20 +193,35 @@ export default {
   text-decoration: none;
   font-weight: 500;
   display: block;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 4px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   white-space: nowrap;
+  position: relative;
+  letter-spacing: 0.5px;
 }
 
 .category-nav a:hover {
   background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
 }
 
 .category-nav a.router-link-active {
   color: var(--accent-color);
   font-weight: bold;
   background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.category-nav a.router-link-active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--accent-color);
+  border-radius: 2px;
 }
 
 .auth-container {
@@ -204,7 +229,10 @@ export default {
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
-  margin-left: 15px;
+  margin-left: 0;
+  padding-left: 10px;
+  position: relative;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .login-form {
@@ -217,6 +245,13 @@ export default {
   border: none;
   border-radius: 4px;
   width: 120px;
+  background-color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s;
+}
+
+.login-form input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-color);
 }
 
 .login-btn, .signup-btn {
@@ -225,22 +260,31 @@ export default {
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   white-space: nowrap;
 }
 
 .login-btn {
   background-color: var(--accent-color);
   color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .signup-btn {
   background-color: rgba(255, 255, 255, 0.2);
   color: var(--secondary-color);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .login-btn:hover, .signup-btn:hover {
   opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.login-btn:active, .signup-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* 반응형 스타일 */
