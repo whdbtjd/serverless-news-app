@@ -7,9 +7,14 @@ import {
 
 // Cognito 설정
 const poolData = {
-  UserPoolId: 'ap-northeast-2_ADoTJ84dE', // import.meta.env.VITE_COGNITO_USER_POOL_ID
-  ClientId: '4skq1u07jmajt1si8p15q8k15a' // import.meta.env.VITE_COGNITO_APP_CLIENT_ID
+  UserPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID || 'ap-northeast-2_ADoTJ84dE',
+  ClientId: import.meta.env.VITE_COGNITO_APP_CLIENT_ID || '4skq1u07jmajt1si8p15q8k15a'
 }
+
+console.log('Cognito 설정:', {
+  UserPoolId: poolData.UserPoolId,
+  ClientId: poolData.ClientId
+})
 
 const userPool = new CognitoUserPool(poolData)
 
