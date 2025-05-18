@@ -28,12 +28,19 @@
           </ul>
           
           <div class="auth-container">
-            <div class="login-form">
-              <input type="text" placeholder="아이디" v-model="userId" />
-              <input type="password" placeholder="비밀번호" v-model="userPassword" />
-              <button class="login-btn" @click="handleLogin">로그인</button>
+            <div v-if="isLoading" class="auth-loading">
+              <span>로딩 중...</span>
             </div>
-            <button class="signup-btn" @click="goToSignup">회원가입</button>
+            <div v-else-if="isAuthenticated" class="user-info">
+              <span class="welcome-text">
+                {{ user.nickname || user.email }} 님
+              </span>
+              <button class="logout-btn" @click="handleLogout">로그아웃</button>
+            </div>
+            <div v-else class="login-form">
+              <button class="login-btn" @click="handleLogin">로그인</button>
+              <button class="signup-btn" @click="goToSignup">회원가입</button>
+            </div>
           </div>
         </div>
       </div>
@@ -42,49 +49,91 @@
 </template>
 
 <script>
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { getCurrentUser, signOut } from '@/services/cognito'
+
 export default {
   name: 'Header',
-  data() {
-    return {
-      searchQuery: '',
-      userId: '',
-      userPassword: '',
-      windowWidth: window.innerWidth
+  setup() {
+    const router = useRouter()
+    const searchQuery = ref('')
+    const userId = ref('')
+    const userPassword = ref('')
+    const windowWidth = ref(window.innerWidth)
+    const user = ref(null)
+    const isLoading = ref(true)
+
+    // 사용자 정보 로드
+    const loadUserInfo = async () => {
+      isLoading.value = true
+      try {
+        user.value = await getCurrentUser()
+      } catch (error) {
+        console.error('사용자 정보 로드 오류:', error)
+        user.value = null
+      } finally {
+        isLoading.value = false
+      }
     }
-  },
-  mounted() {
-    // 화면 크기 변경 이벤트 리스너 추가
-    window.addEventListener('resize', this.onResize);
-    this.onResize();
-  },
-  beforeUnmount() {
-    // 컴포넌트 제거 시 이벤트 리스너 제거
-    window.removeEventListener('resize', this.onResize);
-  },
-  methods: {
-    handleSearch() {
-      if (this.searchQuery.trim()) {
+    
+    // 로그인 여부 확인
+    const isAuthenticated = computed(() => {
+      return !!user.value
+    })
+    
+    // 컴포넌트 마운트 시 사용자 정보 로드
+    onMounted(() => {
+      loadUserInfo()
+      window.addEventListener('resize', onResize)
+      onResize()
+    })
+    
+    const onResize = () => {
+      windowWidth.value = window.innerWidth
+    }
+    
+    const handleSearch = () => {
+      if (searchQuery.value.trim()) {
         // 검색 기능 - 현재는 API에 검색 기능이 없으므로 프론트에서 필터링
-        this.$router.push({
+        router.push({
           path: '/',
-          query: { search: this.searchQuery }
+          query: { search: searchQuery.value }
         })
       }
-    },
-    handleLogin() {
-      // 로그인 기능 구현 예정
-      console.log('로그인 시도:', this.userId, this.userPassword);
-      // 임시 알림
-      alert('로그인 기능 구현 예정입니다.');
-    },
-    goToSignup() {
-      // 회원가입 페이지로 이동 (추후 구현)
-      console.log('회원가입 페이지로 이동');
-      // 임시 알림
-      alert('회원가입 기능 구현 예정입니다.');
-    },
-    onResize() {
-      this.windowWidth = window.innerWidth;
+    }
+    
+    const handleLogin = () => {
+      router.push('/login')
+    }
+    
+    const handleLogout = async () => {
+      try {
+        signOut()
+        user.value = null
+        router.push('/')
+      } catch (error) {
+        console.error('로그아웃 오류:', error)
+      }
+    }
+    
+    const goToSignup = () => {
+      router.push('/signup')
+    }
+    
+    return {
+      searchQuery,
+      userId,
+      userPassword,
+      windowWidth,
+      user,
+      isLoading,
+      isAuthenticated,
+      handleSearch,
+      handleLogin,
+      handleLogout,
+      goToSignup,
+      onResize
     }
   }
 }
@@ -236,26 +285,29 @@ export default {
   border-left: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.auth-loading {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.welcome-text {
+  color: var(--secondary-color);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
 .login-form {
   display: flex;
   gap: 8px;
 }
 
-.login-form input {
-  padding: 6px 8px;
-  border: none;
-  border-radius: 4px;
-  width: 120px;
-  background-color: rgba(255, 255, 255, 0.9);
-  transition: all 0.2s;
-}
-
-.login-form input:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--accent-color);
-}
-
-.login-btn, .signup-btn {
+.login-btn, .signup-btn, .logout-btn {
   padding: 6px 12px;
   border: none;
   border-radius: 4px;
@@ -276,13 +328,18 @@ export default {
   color: var(--secondary-color);
 }
 
-.login-btn:hover, .signup-btn:hover {
+.logout-btn {
+  background-color: rgba(255, 0, 0, 0.3);
+  color: var(--secondary-color);
+}
+
+.login-btn:hover, .signup-btn:hover, .logout-btn:hover {
   opacity: 0.9;
   transform: translateY(-1px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.login-btn:active, .signup-btn:active {
+.login-btn:active, .signup-btn:active, .logout-btn:active {
   transform: translateY(0);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
