@@ -171,10 +171,39 @@ export const getCurrentUser = () => {
   })
 }
 
+/**
+ * 이메일 인증 코드 확인 함수
+ * @param {string} username - 사용자 이름(이메일)
+ * @param {string} code - 인증 코드
+ * @returns {Promise} - 확인 결과 Promise
+ */
+export const confirmSignUp = (username, code) => {
+  return new Promise((resolve, reject) => {
+    const userData = {
+      Username: username,
+      Pool: userPool
+    }
+    
+    const cognitoUser = new CognitoUser(userData)
+    
+    cognitoUser.confirmRegistration(code, true, (err, result) => {
+      if (err) {
+        console.error('이메일 확인 오류:', err)
+        reject(err)
+        return
+      }
+      
+      console.log('이메일 확인 성공:', result)
+      resolve(result)
+    })
+  })
+}
+
 export default {
   signUp,
   signIn,
   signOut,
   getCurrentUser,
+  confirmSignUp,
   userPool
 } 

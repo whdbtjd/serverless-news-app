@@ -127,11 +127,14 @@ export default {
       
       try {
         await signUp(email.value, password.value, nickname.value)
-        successMessage.value = '회원가입이 완료되었습니다. 이메일을 확인하여 계정을 활성화해주세요.'
+        successMessage.value = '회원가입이 완료되었습니다. 이메일로 전송된 인증 코드를 입력해주세요.'
         
-        // 3초 후 로그인 페이지로 이동
+        // 3초 후 이메일 인증 페이지로 이동
         setTimeout(() => {
-          router.push('/login')
+          router.push({
+            path: '/confirm',
+            query: { email: email.value }
+          })
         }, 3000)
       } catch (error) {
         console.error('회원가입 오류:', error)
