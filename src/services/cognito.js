@@ -30,6 +30,20 @@ export const signUp = (username, password, nickname = '') => {
     // 속성 목록 생성
     const attributeList = []
     
+    // 이메일 속성 추가 (필수)
+    const emailAttribute = new CognitoUserAttribute({
+      Name: 'email',
+      Value: username
+    })
+    attributeList.push(emailAttribute)
+    
+    // emails 속성 추가 (필수)
+    const emailsAttribute = new CognitoUserAttribute({
+      Name: 'emails',
+      Value: username  // 이메일을 emails 속성에도 동일하게 설정
+    })
+    attributeList.push(emailsAttribute)
+    
     // 닉네임 속성 추가 (선택적)
     if (nickname) {
       const nicknameAttribute = new CognitoUserAttribute({
