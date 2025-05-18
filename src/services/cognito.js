@@ -7,8 +7,8 @@ import {
 
 // Cognito 설정
 const poolData = {
-  UserPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID,
-  ClientId: import.meta.env.VITE_COGNITO_APP_CLIENT_ID
+  UserPoolId: 'ap-northeast-2_ADoTJ84dE', // import.meta.env.VITE_COGNITO_USER_POOL_ID
+  ClientId: '4skq1u07jmajt1si8p15q8k15a' // import.meta.env.VITE_COGNITO_APP_CLIENT_ID
 }
 
 const userPool = new CognitoUserPool(poolData)

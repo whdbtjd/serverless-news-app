@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: 'https://dyka4bt0wa4co.cloudfront.net', // CloudFront URL로 변경
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
