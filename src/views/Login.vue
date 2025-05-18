@@ -46,7 +46,8 @@
 <script>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { signIn } from '@/services/cognito'
+import { signIn, getCurrentUser } from '@/services/cognito'
+import userStore from '@/store/user'
 
 export default {
   name: 'Login',
@@ -71,6 +72,11 @@ export default {
       
       try {
         await signIn(email.value, password.value)
+        
+        // 사용자 정보 로드
+        const userData = await getCurrentUser()
+        userStore.updateUserState(userData)
+        
         // 로그인 성공 후 홈 페이지로 이동
         router.push('/')
       } catch (error) {

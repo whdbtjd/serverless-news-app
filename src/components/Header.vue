@@ -28,12 +28,12 @@
           </ul>
           
           <div class="auth-container">
-            <div v-if="isLoading" class="auth-loading">
+            <div v-if="userStore.state.isLoading" class="auth-loading">
               <span>로딩 중...</span>
             </div>
-            <div v-else-if="isAuthenticated" class="user-info">
+            <div v-else-if="userStore.state.isAuthenticated" class="user-info">
               <span class="welcome-text">
-                {{ user.nickname || user.email }} 님
+                {{ userStore.state.user?.nickname || userStore.state.user?.email }} 님
               </span>
               <button class="logout-btn" @click="handleLogout">로그아웃</button>
             </div>
@@ -49,45 +49,17 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getCurrentUser, signOut } from '@/services/cognito'
+import { signOut } from '@/services/cognito'
+import userStore from '@/store/user'
 
 export default {
   name: 'Header',
   setup() {
     const router = useRouter()
     const searchQuery = ref('')
-    const userId = ref('')
-    const userPassword = ref('')
     const windowWidth = ref(window.innerWidth)
-    const user = ref(null)
-    const isLoading = ref(true)
-
-    // 사용자 정보 로드
-    const loadUserInfo = async () => {
-      isLoading.value = true
-      try {
-        user.value = await getCurrentUser()
-      } catch (error) {
-        console.error('사용자 정보 로드 오류:', error)
-        user.value = null
-      } finally {
-        isLoading.value = false
-      }
-    }
-    
-    // 로그인 여부 확인
-    const isAuthenticated = computed(() => {
-      return !!user.value
-    })
-    
-    // 컴포넌트 마운트 시 사용자 정보 로드
-    onMounted(() => {
-      loadUserInfo()
-      window.addEventListener('resize', onResize)
-      onResize()
-    })
     
     const onResize = () => {
       windowWidth.value = window.innerWidth
@@ -110,7 +82,7 @@ export default {
     const handleLogout = async () => {
       try {
         signOut()
-        user.value = null
+        userStore.clearUserState()
         router.push('/')
       } catch (error) {
         console.error('로그아웃 오류:', error)
@@ -123,12 +95,8 @@ export default {
     
     return {
       searchQuery,
-      userId,
-      userPassword,
       windowWidth,
-      user,
-      isLoading,
-      isAuthenticated,
+      userStore,
       handleSearch,
       handleLogin,
       handleLogout,
@@ -329,8 +297,9 @@ export default {
 }
 
 .logout-btn {
-  background-color: rgba(255, 0, 0, 0.3);
-  color: var(--secondary-color);
+  background-color: var(--accent-color);
+  color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .login-btn:hover, .signup-btn:hover, .logout-btn:hover {
