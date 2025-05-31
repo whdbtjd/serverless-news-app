@@ -191,16 +191,17 @@ export default {
 }
 
 .auth-form {
-  background-color: #fff;
+  background-color: rgb(27, 36, 61);
   border-radius: 8px;
   padding: 30px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  color: white;
 }
 
 h2 {
   text-align: center;
   margin-bottom: 20px;
-  color: var(--primary-color);
+  color: white;
 }
 
 .form-group {
@@ -211,14 +212,21 @@ label {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 input {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   font-size: 16px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .form-actions {
@@ -244,18 +252,19 @@ button, .primary-button {
 }
 
 .secondary-button {
-  background-color: #f1f1f1;
-  color: #333;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .secondary-link {
   text-align: center;
-  color: var(--primary-color);
+  color: var(--accent-color);
   text-decoration: none;
 }
 
 button:hover, .primary-button:hover, .secondary-button:hover {
   opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 button:disabled {
@@ -264,11 +273,12 @@ button:disabled {
 }
 
 .error-message {
-  background-color: #ffebee;
-  color: #d32f2f;
+  background-color: rgba(211, 47, 47, 0.2);
+  color: #ff6b6b;
   padding: 12px;
   border-radius: 4px;
   margin-top: 20px;
+  border: 1px solid rgba(211, 47, 47, 0.4);
 }
 
 .success-message {
