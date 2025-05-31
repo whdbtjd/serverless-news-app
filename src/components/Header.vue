@@ -40,6 +40,7 @@
             <div v-else class="login-form">
               <button class="login-btn" @click="handleLogin">로그인</button>
               <button class="signup-btn" @click="goToSignup">회원가입</button>
+              <router-link to="/forgot-password" class="forgot-password-link">비밀번호 찾기</router-link>
             </div>
           </div>
         </div>
@@ -311,6 +312,20 @@ export default {
 .login-btn:active, .signup-btn:active, .logout-btn:active {
   transform: translateY(0);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.forgot-password-link {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  text-decoration: none;
+  margin-top: 5px;
+  display: block;
+  text-align: center;
+}
+
+.forgot-password-link:hover {
+  color: var(--secondary-color);
+  text-decoration: underline;
 }
 
 /* 반응형 스타일 */
