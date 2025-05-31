@@ -39,6 +39,12 @@ const routes = [
     name: 'ConfirmSignUp',
     component: () => import('../views/ConfirmSignUp.vue'),
     meta: { public: true }
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('../views/ForgotPassword.vue'),
+    meta: { public: true }
   }
 ]
 
