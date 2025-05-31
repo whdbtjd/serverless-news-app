@@ -199,11 +199,69 @@ export const confirmSignUp = (username, code) => {
   })
 }
 
+/**
+ * 비밀번호 찾기 - 재설정 코드 요청 함수
+ * @param {string} username - 사용자 이름(이메일)
+ * @returns {Promise} - 재설정 코드 요청 결과 Promise
+ */
+export const forgotPassword = (username) => {
+  return new Promise((resolve, reject) => {
+    const userData = {
+      Username: username,
+      Pool: userPool
+    }
+    
+    const cognitoUser = new CognitoUser(userData)
+    
+    cognitoUser.forgotPassword({
+      onSuccess: (data) => {
+        console.log('비밀번호 재설정 코드 요청 성공:', data)
+        resolve(data)
+      },
+      onFailure: (err) => {
+        console.error('비밀번호 재설정 코드 요청 오류:', err)
+        reject(err)
+      }
+    })
+  })
+}
+
+/**
+ * 비밀번호 재설정 함수
+ * @param {string} username - 사용자 이름(이메일)
+ * @param {string} code - 인증 코드
+ * @param {string} newPassword - 새 비밀번호
+ * @returns {Promise} - 비밀번호 재설정 결과 Promise
+ */
+export const confirmNewPassword = (username, code, newPassword) => {
+  return new Promise((resolve, reject) => {
+    const userData = {
+      Username: username,
+      Pool: userPool
+    }
+    
+    const cognitoUser = new CognitoUser(userData)
+    
+    cognitoUser.confirmPassword(code, newPassword, {
+      onSuccess: () => {
+        console.log('비밀번호 재설정 성공')
+        resolve(true)
+      },
+      onFailure: (err) => {
+        console.error('비밀번호 재설정 오류:', err)
+        reject(err)
+      }
+    })
+  })
+}
+
 export default {
   signUp,
   signIn,
   signOut,
   getCurrentUser,
   confirmSignUp,
+  forgotPassword,
+  confirmNewPassword,
   userPool
 } 
