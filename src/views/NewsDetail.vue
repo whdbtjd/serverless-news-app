@@ -39,6 +39,13 @@
             목록으로 돌아가기
           </router-link>
         </div>
+        
+        <!-- 댓글 섹션 추가 -->
+        <comment-section 
+          v-if="currentArticle" 
+          :article-id="id" 
+          :category="category" 
+        />
       </div>
     </div>
     
@@ -54,11 +61,13 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
 import RelatedNewsList from '@/components/RelatedNewsList.vue'
+import CommentSection from '@/components/comments/CommentSection.vue'
 
 export default {
   name: 'NewsDetail',
   components: {
-    RelatedNewsList
+    RelatedNewsList,
+    CommentSection
   },
   props: {
     category: {

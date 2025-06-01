@@ -95,7 +95,16 @@ export default {
         };
         
         // 댓글 저장
-        const articleKey = props.isReply ? null : `${props.articleId.split('_')[0]}_${props.articleId}`;
+        let articleKey;
+        if (props.isReply) {
+          // 답글인 경우 부모 댓글 ID를 활용
+          articleKey = null;
+        } else {
+          // 일반 댓글인 경우 기사 ID 활용
+          // articleId가 문자열로 전달된 경우 그대로 사용
+          articleKey = props.articleId;
+        }
+        
         await addComment(articleKey, newComment);
         
         // 입력 필드 초기화
