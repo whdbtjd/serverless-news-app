@@ -255,6 +255,84 @@ export const confirmNewPassword = (username, code, newPassword) => {
   })
 }
 
+/**
+ * 사용자 속성 업데이트 함수 (닉네임 변경)
+ * @param {string} nickname - 새 닉네임
+ * @returns {Promise} - 속성 업데이트 결과 Promise
+ */
+export const updateUserAttributes = (nickname) => {
+  return new Promise((resolve, reject) => {
+    const currentUser = userPool.getCurrentUser()
+    
+    if (!currentUser) {
+      reject(new Error('로그인이 필요합니다'))
+      return
+    }
+    
+    currentUser.getSession((err, session) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      
+      const attributeList = []
+      
+      // 닉네임 속성 추가
+      const nicknameAttribute = new CognitoUserAttribute({
+        Name: 'nickname',
+        Value: nickname
+      })
+      attributeList.push(nicknameAttribute)
+      
+      currentUser.updateAttributes(attributeList, (err, result) => {
+        if (err) {
+          console.error('속성 업데이트 오류:', err)
+          reject(err)
+          return
+        }
+        
+        console.log('속성 업데이트 성공:', result)
+        resolve(result)
+      })
+    })
+  })
+}
+
+/**
+ * 비밀번호 변경 함수 (로그인된 상태에서)
+ * @param {string} oldPassword - 현재 비밀번호
+ * @param {string} newPassword - 새 비밀번호
+ * @returns {Promise} - 비밀번호 변경 결과 Promise
+ */
+export const changePassword = (oldPassword, newPassword) => {
+  return new Promise((resolve, reject) => {
+    const currentUser = userPool.getCurrentUser()
+    
+    if (!currentUser) {
+      reject(new Error('로그인이 필요합니다'))
+      return
+    }
+    
+    currentUser.getSession((err) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      
+      currentUser.changePassword(oldPassword, newPassword, (err, result) => {
+        if (err) {
+          console.error('비밀번호 변경 오류:', err)
+          reject(err)
+          return
+        }
+        
+        console.log('비밀번호 변경 성공:', result)
+        resolve(result)
+      })
+    })
+  })
+}
+
 export default {
   signUp,
   signIn,
@@ -263,5 +341,7 @@ export default {
   confirmSignUp,
   forgotPassword,
   confirmNewPassword,
+  updateUserAttributes,
+  changePassword,
   userPool
 } 

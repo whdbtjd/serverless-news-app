@@ -35,6 +35,7 @@
               <span class="welcome-text">
                 {{ userStore.state.user?.nickname || userStore.state.user?.email }} 님
               </span>
+              <router-link to="/profile" class="profile-btn">내 정보</router-link>
               <button class="logout-btn" @click="handleLogout">로그아웃</button>
             </div>
             <div v-else class="login-form">
@@ -276,7 +277,7 @@ export default {
   gap: 8px;
 }
 
-.login-btn, .signup-btn, .logout-btn {
+.login-btn, .signup-btn, .logout-btn, .profile-btn {
   padding: 6px 12px;
   border: none;
   border-radius: 4px;
@@ -303,13 +304,21 @@ export default {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.login-btn:hover, .signup-btn:hover, .logout-btn:hover {
+.profile-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--secondary-color);
+  margin-right: 8px;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.login-btn:hover, .signup-btn:hover, .logout-btn:hover, .profile-btn:hover {
   opacity: 0.9;
   transform: translateY(-1px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.login-btn:active, .signup-btn:active, .logout-btn:active {
+.login-btn:active, .signup-btn:active, .logout-btn:active, .profile-btn:active {
   transform: translateY(0);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
