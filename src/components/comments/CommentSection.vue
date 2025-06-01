@@ -55,6 +55,7 @@ export default {
     const loadComments = () => {
       const articleKey = `${props.category}_${props.articleId}`;
       comments.value = getComments(articleKey);
+      console.log(`댓글 로드: ${articleKey}, 댓글 수: ${comments.value.length}`);
     };
     
     // 사용자 정보 불러오기

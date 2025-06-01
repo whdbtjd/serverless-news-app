@@ -95,7 +95,7 @@ export default {
   emits: ['comment-deleted', 'reply-added'],
   setup(props, { emit }) {
     const isReplyFormVisible = ref(false);
-    const showReplies = ref(false);
+    const showReplies = ref(props.replies && props.replies.length > 0);
     
     // 현재 사용자가 댓글 작성자인지 확인
     const isCommentOwner = computed(() => {

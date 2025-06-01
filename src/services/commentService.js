@@ -166,9 +166,38 @@ export const clearArticleComments = (articleKey) => {
   });
 };
 
+/**
+ * 댓글 ID로 해당 댓글이 속한 기사 키 찾기
+ * @param {string} commentId - 댓글 ID
+ * @returns {Promise<string|null>} - 기사 키 또는 null
+ */
+export const findArticleKeyByCommentId = async (commentId) => {
+  try {
+    const storageKeys = findAllCommentStorageKeys();
+    
+    for (const storageKey of storageKeys) {
+      const comments = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      
+      // 해당 댓글 ID를 찾기
+      const foundComment = comments.find(comment => comment.id === commentId);
+      
+      if (foundComment) {
+        // 스토리지 키에서 접두사 제거하여 기사 키 반환
+        return storageKey.replace(COMMENTS_STORAGE_KEY_PREFIX, '');
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('댓글 기사 키 찾기 오류:', error);
+    return null;
+  }
+};
+
 export default {
   getComments,
   addComment,
   deleteComment,
-  clearArticleComments
+  clearArticleComments,
+  findArticleKeyByCommentId
 }; 

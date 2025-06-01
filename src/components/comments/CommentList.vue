@@ -1,7 +1,8 @@
 <template>
   <div class="comments-list">
     <div v-if="comments.length === 0" class="no-comments">
-      <p>첫 번째 댓글을 작성해보세요!</p>
+      <p v-if="isLoggedIn">첫 번째 댓글을 작성해보세요!</p>
+      <p v-else>아직 작성된 댓글이 없습니다. 댓글을 작성하려면 로그인해주세요.</p>
     </div>
     
     <div v-else class="comments-container">
@@ -46,12 +47,18 @@ export default {
   setup(props) {
     // 최상위 댓글만 필터링 (부모 댓글이 없는 것들)
     const mainComments = computed(() => {
-      return props.comments.filter(comment => !comment.parentId);
+      // 부모 댓글이 없는 댓글만 필터링하고 최신순으로 정렬
+      return props.comments
+        .filter(comment => !comment.parentId)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     });
     
     // 특정 댓글의 답글 가져오기
     const getRepliesFor = (commentId) => {
-      return props.comments.filter(comment => comment.parentId === commentId);
+      // 특정 부모 댓글에 속한 답글만 필터링하고 최신순으로 정렬
+      return props.comments
+        .filter(comment => comment.parentId === commentId)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     };
     
     return {

@@ -33,6 +33,7 @@
 import { ref, computed } from 'vue';
 import { getCurrentUser } from '@/services/cognito';
 import { addComment } from '@/services/commentService';
+import { findArticleKeyByCommentId } from '@/services/commentService';
 
 export default {
   name: 'CommentForm',
@@ -97,12 +98,15 @@ export default {
         // 댓글 저장
         let articleKey;
         if (props.isReply) {
-          // 답글인 경우 부모 댓글 ID를 활용
-          articleKey = null;
+          // 답글인 경우, 모든 댓글 저장소를 검색하여 부모 댓글이 있는 기사 키 찾기
+          articleKey = await findArticleKeyByCommentId(props.parentId);
         } else {
           // 일반 댓글인 경우 기사 ID 활용
-          // articleId가 문자열로 전달된 경우 그대로 사용
           articleKey = props.articleId;
+        }
+        
+        if (!articleKey && props.isReply) {
+          throw new Error('부모 댓글을 찾을 수 없습니다.');
         }
         
         await addComment(articleKey, newComment);
