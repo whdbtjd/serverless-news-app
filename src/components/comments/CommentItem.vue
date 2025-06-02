@@ -7,7 +7,9 @@
       </div>
       
       <div class="comment-actions" v-if="isLoggedIn && isCommentOwner">
-        <button class="delete-button" @click="confirmDelete">삭제</button>
+        <button class="delete-button" @click="confirmDelete" :disabled="isDeleting">
+          {{ isDeleting ? '삭제 중...' : '삭제' }}
+        </button>
       </div>
     </div>
     
@@ -34,6 +36,11 @@
         />
         <button class="cancel-button" @click="toggleReplyForm">취소</button>
       </div>
+    </div>
+    
+    <!-- 알림 메시지 -->
+    <div v-if="resultMessage" class="result-message" :class="{ 'error': isError }">
+      {{ resultMessage }}
     </div>
     
     <!-- 답글 목록 -->
@@ -96,6 +103,9 @@ export default {
   setup(props, { emit }) {
     const isReplyFormVisible = ref(false);
     const showReplies = ref(props.replies && props.replies.length > 0);
+    const isDeleting = ref(false);
+    const resultMessage = ref('');
+    const isError = ref(false);
     
     // 현재 사용자가 댓글 작성자인지 확인
     const isCommentOwner = computed(() => {
@@ -113,14 +123,30 @@ export default {
       showReplies.value = !showReplies.value;
     };
     
+    // 메시지 표시 함수
+    const showMessage = (message, error = false) => {
+      resultMessage.value = message;
+      isError.value = error;
+      
+      // 3초 후 메시지 사라짐
+      setTimeout(() => {
+        resultMessage.value = '';
+      }, 3000);
+    };
+    
     // 댓글 삭제
     const confirmDelete = async () => {
       if (confirm('정말 이 댓글을 삭제하시겠습니까?')) {
         try {
+          isDeleting.value = true;
           await deleteComment(props.comment.id);
+          showMessage('댓글이 삭제되었습니다.');
           emit('comment-deleted');
         } catch (error) {
           console.error('댓글 삭제 오류:', error);
+          showMessage('댓글 삭제 중 오류가 발생했습니다.', true);
+        } finally {
+          isDeleting.value = false;
         }
       }
     };
@@ -162,6 +188,9 @@ export default {
       isReplyFormVisible,
       showReplies,
       isCommentOwner,
+      isDeleting,
+      resultMessage,
+      isError,
       toggleReplyForm,
       toggleReplies,
       confirmDelete,
@@ -222,8 +251,13 @@ export default {
   padding: 0;
 }
 
-.delete-button:hover {
+.delete-button:hover:not(:disabled) {
   text-decoration: underline;
+}
+
+.delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .comment-content {
@@ -296,5 +330,21 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* 결과 메시지 스타일 */
+.result-message {
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: rgba(72, 187, 120, 0.2);
+  color: #48bb78;
+  font-size: 12px;
+  text-align: center;
+}
+
+.result-message.error {
+  background-color: rgba(245, 101, 101, 0.2);
+  color: #f56565;
 }
 </style> 
