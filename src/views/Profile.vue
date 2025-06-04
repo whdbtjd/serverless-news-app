@@ -103,18 +103,55 @@
           </div>
         </div>
       </div>
+      
+      <!-- 회원탈퇴 섹션 -->
+      <div class="profile-section danger-section">
+        <h2>회원탈퇴</h2>
+        <div class="edit-form">
+          <p class="warning-text">
+            회원탈퇴 시 모든 정보가 삭제되며 복구할 수 없습니다.
+            정말로 탈퇴하시겠습니까?
+          </p>
+          <button 
+            @click="showDeleteConfirm = true" 
+            class="delete-button"
+          >
+            회원탈퇴
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 회원탈퇴 확인 모달 -->
+    <div v-if="showDeleteConfirm" class="modal-overlay">
+      <div class="modal-content">
+        <h3>회원탈퇴 확인</h3>
+        <p>정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.</p>
+        <div class="modal-buttons">
+          <button @click="showDeleteConfirm = false" class="cancel-button">취소</button>
+          <button @click="confirmDeleteUser" :disabled="deleteLoading" class="confirm-delete-button">
+            {{ deleteLoading ? '처리 중...' : '회원탈퇴' }}
+          </button>
+        </div>
+        <div v-if="deleteError" class="error-message">
+          {{ deleteError }}
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { ref, onMounted } from 'vue'
-import { getCurrentUser, updateUserAttributes, changePassword } from '@/services/cognito'
+import { getCurrentUser, updateUserAttributes, changePassword, deleteUser, signOut } from '@/services/cognito'
 import userStore from '@/store/user'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'Profile',
   setup() {
+    const router = useRouter()
+    
     // 사용자 정보 상태
     const userInfo = ref(null)
     const isLoading = ref(true)
@@ -132,6 +169,11 @@ export default {
     const passwordLoading = ref(false)
     const passwordSuccess = ref(false)
     const passwordError = ref('')
+    
+    // 회원탈퇴 관련 상태
+    const showDeleteConfirm = ref(false)
+    const deleteLoading = ref(false)
+    const deleteError = ref('')
     
     // 사용자 정보 로드
     const loadUserInfo = async () => {
@@ -222,6 +264,33 @@ export default {
       }
     }
     
+    // 회원탈퇴 함수
+    const confirmDeleteUser = async () => {
+      deleteLoading.value = true
+      deleteError.value = ''
+      
+      try {
+        await deleteUser()
+        
+        // 로그아웃 처리
+        signOut()
+        
+        // 전역 사용자 상태 초기화
+        userStore.clearUserState()
+        
+        // 모달 닫기
+        showDeleteConfirm.value = false
+        
+        // 홈페이지로 리다이렉트
+        router.push('/')
+      } catch (error) {
+        console.error('회원탈퇴 오류:', error)
+        deleteError.value = error.message || '회원탈퇴 중 오류가 발생했습니다.'
+      } finally {
+        deleteLoading.value = false
+      }
+    }
+    
     // 컴포넌트 마운트 시 사용자 정보 로드
     onMounted(() => {
       loadUserInfo()
@@ -240,8 +309,12 @@ export default {
       passwordLoading,
       passwordSuccess,
       passwordError,
+      showDeleteConfirm,
+      deleteLoading,
+      deleteError,
       updateNickname,
-      updatePassword
+      updatePassword,
+      confirmDeleteUser
     }
   }
 }
@@ -369,6 +442,88 @@ input {
   border: 1px solid rgba(211, 47, 47, 0.4);
   color: #ff6b6b;
   border-radius: 4px;
+}
+
+.danger-section {
+  border-left: 4px solid #ff5252;
+}
+
+.warning-text {
+  color: #ff6b6b;
+  margin-bottom: 20px;
+}
+
+.delete-button {
+  padding: 12px;
+  background-color: #ff5252;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.delete-button:hover {
+  background-color: #ff3636;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: var(--card-bg-color);
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: var(--secondary-color);
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cancel-button {
+  padding: 10px 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.confirm-delete-button {
+  padding: 10px 20px;
+  background-color: #ff5252;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.confirm-delete-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* 반응형 스타일 */

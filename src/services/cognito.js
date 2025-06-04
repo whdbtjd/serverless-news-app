@@ -333,6 +333,39 @@ export const changePassword = (oldPassword, newPassword) => {
   })
 }
 
+/**
+ * 회원탈퇴 함수
+ * @returns {Promise} - 회원탈퇴 결과 Promise
+ */
+export const deleteUser = () => {
+  return new Promise((resolve, reject) => {
+    const currentUser = userPool.getCurrentUser()
+    
+    if (!currentUser) {
+      reject(new Error('로그인이 필요합니다'))
+      return
+    }
+    
+    currentUser.getSession((err, session) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      
+      currentUser.deleteUser((err, result) => {
+        if (err) {
+          console.error('회원탈퇴 오류:', err)
+          reject(err)
+          return
+        }
+        
+        console.log('회원탈퇴 성공:', result)
+        resolve(result)
+      })
+    })
+  })
+}
+
 export default {
   signUp,
   signIn,
@@ -343,5 +376,6 @@ export default {
   confirmNewPassword,
   updateUserAttributes,
   changePassword,
+  deleteUser,
   userPool
 } 
