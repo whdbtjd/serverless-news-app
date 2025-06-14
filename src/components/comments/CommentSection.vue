@@ -53,9 +53,29 @@ export default {
     
     // 댓글 불러오기
     const loadComments = () => {
-      const articleKey = `${props.category}_${props.articleId}`;
-      comments.value = getComments(articleKey);
-      console.log(`댓글 로드: ${articleKey}, 댓글 수: ${comments.value.length}`);
+      try {
+        const articleKey = `${props.category}_${props.articleId}`;
+        console.log('댓글 로드 시도:', {
+          category: props.category,
+          articleId: props.articleId,
+          articleKey
+        });
+
+        if (!articleKey) {
+          console.error('articleKey가 유효하지 않습니다:', {
+            category: props.category,
+            articleId: props.articleId
+          });
+          comments.value = [];
+          return;
+        }
+
+        comments.value = getComments(articleKey);
+        console.log(`댓글 로드 완료: ${articleKey}, 댓글 수: ${comments.value.length}`);
+      } catch (error) {
+        console.error('댓글 로드 오류:', error);
+        comments.value = [];
+      }
     };
     
     // 사용자 정보 불러오기

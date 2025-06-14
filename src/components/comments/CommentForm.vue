@@ -95,6 +95,14 @@ export default {
           parentId: props.parentId // 부모 댓글 ID (답글인 경우)
         };
         
+        // 디버그 로깅 추가
+        console.log('댓글 등록 시도:', {
+          isReply: props.isReply,
+          articleId: props.articleId,
+          parentId: props.parentId,
+          newComment
+        });
+        
         // 댓글 저장
         let articleKey;
         if (props.isReply) {

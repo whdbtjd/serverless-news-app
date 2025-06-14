@@ -36,6 +36,16 @@ export const getComments = (articleKey) => {
 export const addComment = (articleKey, comment) => {
   return new Promise((resolve, reject) => {
     try {
+      console.log('댓글 저장 시도:', {
+        articleKey,
+        storageKey: `${COMMENTS_STORAGE_KEY_PREFIX}${articleKey}`,
+        comment
+      });
+
+      if (!articleKey) {
+        throw new Error('기사 키가 없습니다.');
+      }
+
       // 기존 댓글 목록 가져오기
       const comments = getComments(articleKey);
       
@@ -48,15 +58,21 @@ export const addComment = (articleKey, comment) => {
       // 댓글 목록에 추가
       comments.push(newComment);
       
-      // 로컬 스토리지에 저장
-      const storageKey = `${COMMENTS_STORAGE_KEY_PREFIX}${articleKey}`;
-      localStorage.setItem(storageKey, JSON.stringify(comments));
+      try {
+        // 로컬 스토리지에 저장
+        const storageKey = `${COMMENTS_STORAGE_KEY_PREFIX}${articleKey}`;
+        localStorage.setItem(storageKey, JSON.stringify(comments));
+      } catch (storageError) {
+        console.error('로컬 스토리지 저장 오류:', storageError);
+        throw new Error('댓글을 저장할 수 없습니다. 브라우저 저장소가 가득 찼거나 접근이 거부되었습니다.');
+      }
       
       // 답글인 경우 부모 댓글에도 추가
       if (comment.parentId) {
         updateRepliesCount(comment.parentId);
       }
-      
+
+      console.log('댓글 저장 성공:', newComment);
       resolve(newComment);
     } catch (error) {
       console.error('댓글 추가 오류:', error);
