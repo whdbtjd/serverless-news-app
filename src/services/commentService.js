@@ -3,8 +3,36 @@
  * 로컬 스토리지를 사용하여 댓글 데이터를 관리합니다.
  */
 
-// 로컬 스토리지 키 접두사
+// 상수 정의
 const COMMENTS_STORAGE_KEY_PREFIX = 'news_comments_';
+const MAX_COMMENT_LENGTH = 300;
+const MAX_REPLIES_PER_COMMENT = 50;
+const COMMENT_ID_PREFIX = 'comment_';
+
+/**
+ * 댓글 관련 유효성 검사 유틸리티
+ */
+const CommentValidator = {
+  /**
+   * 댓글 내용 유효성 검사
+   * @param {string} content - 댓글 내용
+   * @returns {boolean} - 유효성 여부
+   */
+  isValidContent(content) {
+    return content && content.trim().length > 0 && content.length <= MAX_COMMENT_LENGTH;
+  },
+
+  /**
+   * 답글 수 제한 확인
+   * @param {Array} comments - 댓글 목록
+   * @param {string} parentId - 부모 댓글 ID
+   * @returns {boolean} - 답글 추가 가능 여부
+   */
+  canAddReply(comments, parentId) {
+    const repliesCount = comments.filter(comment => comment.parentId === parentId).length;
+    return repliesCount < MAX_REPLIES_PER_COMMENT;
+  }
+};
 
 /**
  * 스토리지 키 생성
@@ -58,18 +86,27 @@ export const addComment = (articleKey, comment) => {
         throw new Error('기사 키가 없습니다.');
       }
 
+      if (!CommentValidator.isValidContent(comment.content)) {
+        throw new Error('유효하지 않은 댓글 내용입니다.');
+      }
+
       // 기존 댓글 목록 가져오기
       const comments = getComments(articleKey);
-      
+
+      // 답글인 경우 제한 확인
+      if (comment.parentId && !CommentValidator.canAddReply(comments, comment.parentId)) {
+        throw new Error('답글 개수가 제한을 초과했습니다.');
+      }
+
       // 새 댓글에 고유 ID 부여
       const newComment = {
         ...comment,
         id: generateCommentId()
       };
-      
+
       // 댓글 목록에 추가
       comments.push(newComment);
-      
+
       try {
         // 로컬 스토리지에 저장
         localStorage.setItem(storageKey, JSON.stringify(comments));
@@ -77,7 +114,7 @@ export const addComment = (articleKey, comment) => {
         console.error('로컬 스토리지 저장 오류:', storageError);
         throw new Error('댓글을 저장할 수 없습니다. 브라우저 저장소가 가득 찼거나 접근이 거부되었습니다.');
       }
-      
+
       // 답글인 경우 부모 댓글에도 추가
       if (comment.parentId) {
         updateRepliesCount(comment.parentId);
@@ -145,7 +182,9 @@ const findAllCommentStorageKeys = () => {
  * @returns {string} - 고유 ID
  */
 const generateCommentId = () => {
-  return `comment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substr(2, 9);
+  return `${COMMENT_ID_PREFIX}${timestamp}_${random}`;
 };
 
 /**
