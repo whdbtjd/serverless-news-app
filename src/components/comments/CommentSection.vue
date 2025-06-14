@@ -54,7 +54,7 @@ export default {
     // 댓글 불러오기
     const loadComments = () => {
       try {
-        const articleKey = `${props.category}_${props.articleId}`;
+        const articleKey = props.articleId;
         console.log('댓글 로드 시도:', {
           category: props.category,
           articleId: props.articleId,

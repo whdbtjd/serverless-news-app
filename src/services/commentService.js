@@ -7,13 +7,24 @@
 const COMMENTS_STORAGE_KEY_PREFIX = 'news_comments_';
 
 /**
+ * 스토리지 키 생성
+ * @param {string} articleKey - 기사 고유 키
+ * @returns {string} - 완성된 스토리지 키
+ */
+const getStorageKey = (articleKey) => {
+  return `${COMMENTS_STORAGE_KEY_PREFIX}${articleKey}`;
+};
+
+/**
  * 댓글 목록 가져오기
- * @param {string} articleKey - 기사 고유 키 (category_id 형식)
+ * @param {string} articleKey - 기사 고유 키
  * @returns {Array} - 댓글 목록
  */
 export const getComments = (articleKey) => {
   try {
-    const storageKey = `${COMMENTS_STORAGE_KEY_PREFIX}${articleKey}`;
+    const storageKey = getStorageKey(articleKey);
+    console.log('댓글 로드 시도 (스토리지 키):', storageKey);
+    
     const commentsJson = localStorage.getItem(storageKey);
     
     if (!commentsJson) {
@@ -29,16 +40,17 @@ export const getComments = (articleKey) => {
 
 /**
  * 댓글 추가
- * @param {string} articleKey - 기사 고유 키 (category_id 형식)
+ * @param {string} articleKey - 기사 고유 키
  * @param {Object} comment - 댓글 객체
  * @returns {Promise} - 작업 결과 Promise
  */
 export const addComment = (articleKey, comment) => {
   return new Promise((resolve, reject) => {
     try {
+      const storageKey = getStorageKey(articleKey);
       console.log('댓글 저장 시도:', {
         articleKey,
-        storageKey: `${COMMENTS_STORAGE_KEY_PREFIX}${articleKey}`,
+        storageKey,
         comment
       });
 
@@ -60,7 +72,6 @@ export const addComment = (articleKey, comment) => {
       
       try {
         // 로컬 스토리지에 저장
-        const storageKey = `${COMMENTS_STORAGE_KEY_PREFIX}${articleKey}`;
         localStorage.setItem(storageKey, JSON.stringify(comments));
       } catch (storageError) {
         console.error('로컬 스토리지 저장 오류:', storageError);
@@ -172,7 +183,7 @@ const updateRepliesCount = (parentId) => {
 export const clearArticleComments = (articleKey) => {
   return new Promise((resolve, reject) => {
     try {
-      const storageKey = `${COMMENTS_STORAGE_KEY_PREFIX}${articleKey}`;
+      const storageKey = getStorageKey(articleKey);
       localStorage.removeItem(storageKey);
       resolve(true);
     } catch (error) {
