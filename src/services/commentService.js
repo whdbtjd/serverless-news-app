@@ -260,10 +260,66 @@ export const findArticleKeyByCommentId = async (commentId) => {
   }
 };
 
+/**
+ * 댓글 좋아요 토글
+ * @param {string} articleKey - 기사 고유 키
+ * @param {string} commentId - 댓글 ID
+ * @param {string} userId - 사용자 ID
+ * @returns {Promise<Object>} - 업데이트된 댓글 객체
+ */
+export const toggleCommentLike = (articleKey, commentId, userId) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const comments = getComments(articleKey);
+      const commentIndex = comments.findIndex(c => c.id === commentId);
+      
+      if (commentIndex === -1) {
+        throw new Error('댓글을 찾을 수 없습니다.');
+      }
+      
+      const comment = comments[commentIndex];
+      
+      // likes 배열이 없으면 초기화
+      if (!comment.likes) {
+        comment.likes = [];
+      }
+      
+      // 이미 좋아요 했으면 취소, 아니면 추가
+      const likeIndex = comment.likes.indexOf(userId);
+      if (likeIndex > -1) {
+        comment.likes.splice(likeIndex, 1);
+      } else {
+        comment.likes.push(userId);
+      }
+      
+      // 변경된 댓글 목록 저장
+      const storageKey = getStorageKey(articleKey);
+      localStorage.setItem(storageKey, JSON.stringify(comments));
+      
+      resolve(comment);
+    } catch (error) {
+      console.error('좋아요 토글 오류:', error);
+      reject(error);
+    }
+  });
+};
+
+/**
+ * 사용자가 댓글에 좋아요 했는지 확인
+ * @param {Object} comment - 댓글 객체
+ * @param {string} userId - 사용자 ID
+ * @returns {boolean} - 좋아요 여부
+ */
+export const hasUserLiked = (comment, userId) => {
+  return comment.likes && comment.likes.includes(userId);
+};
+
 export default {
   getComments,
   addComment,
   deleteComment,
   clearArticleComments,
-  findArticleKeyByCommentId
+  findArticleKeyByCommentId,
+  toggleCommentLike,
+  hasUserLiked
 }; 
