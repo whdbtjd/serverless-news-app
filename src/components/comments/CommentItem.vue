@@ -6,8 +6,22 @@
         <span class="comment-time">{{ formatTimeAgo(comment.timestamp) }}</span>
       </div>
       
-      <div class="comment-actions" v-if="isLoggedIn && isCommentOwner">
-        <button class="delete-button" @click="confirmDelete" :disabled="isDeleting">
+      <div class="comment-actions">
+        <button 
+          v-if="isLoggedIn"
+          class="like-button"
+          :class="{ 'liked': isLiked }"
+          @click="handleLike"
+        >
+          <span class="like-icon">👍</span>
+          <span class="like-count">{{ comment.likes?.length || 0 }}</span>
+        </button>
+        <button 
+          v-if="isLoggedIn && isCommentOwner" 
+          class="delete-button" 
+          @click="confirmDelete" 
+          :disabled="isDeleting"
+        >
           {{ isDeleting ? '삭제 중...' : '삭제' }}
         </button>
       </div>
@@ -73,7 +87,7 @@
 
 <script>
 import { ref, computed } from 'vue';
-import { deleteComment } from '@/services/commentService';
+import { deleteComment, hasUserLiked, toggleCommentLike } from '@/services/commentService';
 import CommentForm from './CommentForm.vue';
 
 export default {
@@ -99,7 +113,7 @@ export default {
       default: null
     }
   },
-  emits: ['comment-deleted', 'reply-added'],
+  emits: ['comment-deleted', 'reply-added', 'comment-updated'],
   setup(props, { emit }) {
     const isReplyFormVisible = ref(false);
     const showReplies = ref(props.replies && props.replies.length > 0);
@@ -111,6 +125,12 @@ export default {
     const isCommentOwner = computed(() => {
       if (!props.currentUser) return false;
       return props.currentUser.username === props.comment.userId;
+    });
+
+    // 좋아요 상태 계산
+    const isLiked = computed(() => {
+      if (!props.currentUser || !props.comment) return false;
+      return hasUserLiked(props.comment, props.currentUser.username);
     });
     
     // 답글 폼 표시 토글
@@ -157,6 +177,18 @@ export default {
       showReplies.value = true;
       emit('reply-added');
     };
+
+    // 좋아요 토글 처리
+    const handleLike = async () => {
+      try {
+        const articleKey = props.comment.articleKey;
+        await toggleCommentLike(articleKey, props.comment.id, props.currentUser.username);
+        emit('comment-updated');
+      } catch (error) {
+        console.error('좋아요 처리 중 오류:', error);
+        showMessage('좋아요 처리 중 오류가 발생했습니다.', true);
+      }
+    };
     
     // 상대적 시간 포맷팅 (예: "5분 전")
     const formatTimeAgo = (timestamp) => {
@@ -191,10 +223,12 @@ export default {
       isDeleting,
       resultMessage,
       isError,
+      isLiked,
       toggleReplyForm,
       toggleReplies,
       confirmDelete,
       handleReplyAdded,
+      handleLike,
       formatTimeAgo
     };
   }
@@ -239,7 +273,42 @@ export default {
 
 .comment-actions {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
+}
+
+.like-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: var(--secondary-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.like-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.like-button.liked {
+  background-color: rgba(76, 175, 80, 0.2);
+  border-color: rgba(76, 175, 80, 0.4);
+  color: #4CAF50;
+}
+
+.like-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.like-count {
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .delete-button {
@@ -347,4 +416,4 @@ export default {
   background-color: rgba(245, 101, 101, 0.2);
   color: #f56565;
 }
-</style> 
+</style>
