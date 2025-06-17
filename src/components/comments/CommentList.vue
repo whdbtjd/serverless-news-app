@@ -15,6 +15,7 @@
         :current-user="currentUser"
         @comment-deleted="$emit('comment-deleted')"
         @reply-added="$emit('reply-added')"
+        @comment-updated="$emit('comment-updated')"
       />
     </div>
   </div>
@@ -43,7 +44,7 @@ export default {
       default: null
     }
   },
-  emits: ['comment-deleted', 'reply-added'],
+  emits: ['comment-deleted', 'reply-added', 'comment-updated'],
   setup(props) {
     // 최상위 댓글만 필터링 (부모 댓글이 없는 것들)
     const mainComments = computed(() => {

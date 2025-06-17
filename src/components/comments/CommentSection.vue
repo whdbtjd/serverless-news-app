@@ -19,6 +19,7 @@
       :current-user="currentUser"
       @comment-deleted="loadComments"
       @reply-added="loadComments"
+      @comment-updated="loadComments"
     />
   </div>
 </template>
@@ -70,7 +71,13 @@ export default {
           return;
         }
 
-        comments.value = getComments(articleKey);
+        // 댓글 목록을 가져올 때 articleKey를 각 댓글 객체에 추가
+        const loadedComments = getComments(articleKey);
+        comments.value = loadedComments.map(comment => ({
+          ...comment,
+          articleKey
+        }));
+        
         console.log(`댓글 로드 완료: ${articleKey}, 댓글 수: ${comments.value.length}`);
       } catch (error) {
         console.error('댓글 로드 오류:', error);
