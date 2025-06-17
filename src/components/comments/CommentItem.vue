@@ -10,11 +10,16 @@
         <button 
           v-if="isLoggedIn"
           class="like-button"
-          :class="{ 'liked': isLiked }"
+          :class="{ 
+            'liked': isLiked,
+            'processing': isLiking
+          }"
           @click="handleLike"
+          :disabled="isLiking"
         >
           <span class="like-icon">👍</span>
           <span class="like-count">{{ comment.likes?.length || 0 }}</span>
+          <span v-if="isLiking" class="processing-indicator"></span>
         </button>
         <button 
           v-if="isLoggedIn && isCommentOwner" 
@@ -118,6 +123,7 @@ export default {
     const isReplyFormVisible = ref(false);
     const showReplies = ref(props.replies && props.replies.length > 0);
     const isDeleting = ref(false);
+    const isLiking = ref(false);
     const resultMessage = ref('');
     const isError = ref(false);
     
@@ -180,13 +186,18 @@ export default {
 
     // 좋아요 토글 처리
     const handleLike = async () => {
+      if (isLiking.value) return;
+      
       try {
+        isLiking.value = true;
         const articleKey = props.comment.articleKey;
         await toggleCommentLike(articleKey, props.comment.id, props.currentUser.username);
         emit('comment-updated');
       } catch (error) {
         console.error('좋아요 처리 중 오류:', error);
         showMessage('좋아요 처리 중 오류가 발생했습니다.', true);
+      } finally {
+        isLiking.value = false;
       }
     };
     
@@ -221,6 +232,7 @@ export default {
       showReplies,
       isCommentOwner,
       isDeleting,
+      isLiking,
       resultMessage,
       isError,
       isLiked,
@@ -288,22 +300,54 @@ export default {
   color: var(--secondary-color);
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.like-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+.like-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
-.like-button.liked {
-  background-color: rgba(76, 175, 80, 0.2);
-  border-color: rgba(76, 175, 80, 0.4);
-  color: #4CAF50;
+.like-button:active::after {
+  transform: translate(-50%, -50%) scale(2);
+  opacity: 1;
+  transition: 0s;
 }
 
-.like-icon {
-  font-size: 14px;
-  line-height: 1;
+.like-button .like-icon {
+  transform-origin: center;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.like-button:hover .like-icon {
+  transform: scale(1.2);
+}
+
+.like-button.liked .like-icon {
+  transform: scale(1.2);
+  animation: likeAnimation 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes likeAnimation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1.2);
+  }
 }
 
 .like-count {
@@ -415,5 +459,51 @@ export default {
 .result-message.error {
   background-color: rgba(245, 101, 101, 0.2);
   color: #f56565;
+}
+
+.like-button.processing {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.like-button.processing .like-icon {
+  animation: pulse 1s infinite;
+}
+
+.processing-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--accent-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.like-button.processing .processing-indicator {
+  opacity: 1;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 </style>
