@@ -77,12 +77,13 @@
           <CommentItem
             v-for="reply in replies"
             :key="reply.id"
-            :comment="reply"
+            :comment="{ ...reply, articleKey: comment.articleKey }"
             :is-logged-in="isLoggedIn"
             :current-user="currentUser"
             :replies="[]"
             @comment-deleted="$emit('comment-deleted')"
             @reply-added="$emit('reply-added')"
+            @comment-updated="$emit('comment-updated')"
           />
         </div>
       </div>
