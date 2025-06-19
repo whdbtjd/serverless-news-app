@@ -1,56 +1,63 @@
 <template>
-  <div class="app">
-    <Header />
-    <main class="container">
-      <router-view />
-    </main>
+  <div id="app">
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import Header from './components/Header.vue'
-
 export default {
-  name: 'App',
-  components: {
-    Header
-  }
+  name: 'App'
 }
 </script>
 
 <style>
-:root {
-  --primary-color: #1a2b4a;
-  --secondary-color: #ffffff;
-  --card-bg-color: #12203a;
-  --accent-color: #3366cc;
-}
+@import './assets/styles/theme.css';
 
 body {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #0a1529 100%);
-  color: var(--secondary-color);
-  font-family: 'Noto Sans KR', sans-serif;
   margin: 0;
-  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+#app {
   min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+a {
+  color: var(--accent-color);
+  text-decoration: none;
 }
 
-.news-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+a:hover {
+  text-decoration: underline;
 }
 
-@media (max-width: 768px) {
-  .news-grid {
-    grid-template-columns: 1fr;
-  }
+/* 기본 버튼 스타일 */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* 기본 입력 필드 스타일 */
+input, textarea {
+  font-family: inherit;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
 }
 </style>
