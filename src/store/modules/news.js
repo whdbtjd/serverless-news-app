@@ -1,5 +1,8 @@
 import api from '@/services/api'
 
+const MAX_RETRIES = 3
+const RETRY_DELAY = 1000 // 1초
+
 export default {
   namespaced: true,
   state: () => ({
@@ -9,7 +12,8 @@ export default {
     relatedNews: [],
     loading: false,
     loadingRelated: false,
-    error: null
+    error: null,
+    retryCount: 0
   }),
   mutations: {
     SET_ALL_NEWS(state, news) {
@@ -32,60 +36,85 @@ export default {
     },
     SET_ERROR(state, error) {
       state.error = error
+    },
+    INCREMENT_RETRY_COUNT(state) {
+      state.retryCount++
+    },
+    RESET_RETRY_COUNT(state) {
+      state.retryCount = 0
     }
   },
   actions: {
-    async fetchAllNews({ commit }) {
+    async fetchAllNews({ commit, state, dispatch }) {
+      if (state.loading) return // 이미 로딩 중이면 중복 호출 방지
+      
       commit('SET_LOADING', true)
+      commit('SET_ERROR', null)
+      
       try {
         const response = await api.getAllNews()
         
         // API 응답이 HTML인 경우 처리
         if (response && typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-          console.error('API가 HTML 응답을 반환했습니다');
-          commit('SET_ERROR', new Error('API 응답 형식이 올바르지 않습니다'));
-          commit('SET_ALL_NEWS', []);
-          return;
+          throw new Error('API가 HTML 응답을 반환했습니다')
         }
         
-        // 중복 제거 로직 추가
+        if (!response.data || !response.data.news) {
+          throw new Error('API 응답 형식이 올바르지 않습니다')
+        }
+        
+        // 중복 제거 로직
         const uniqueNewsMap = new Map()
         response.data.news.forEach(article => {
-          // 제목을 기준으로 중복 제거
           const key = article.title
           if (!uniqueNewsMap.has(key)) {
             uniqueNewsMap.set(key, article)
           }
         })
         
-        // Map에서 값만 추출하여 배열로 변환
         const uniqueNews = Array.from(uniqueNewsMap.values())
-        
-        // 최신순 정렬 (선택적)
         uniqueNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
         
         commit('SET_ALL_NEWS', uniqueNews)
+        commit('RESET_RETRY_COUNT')
       } catch (error) {
+        console.error('뉴스 로딩 오류:', error)
         commit('SET_ERROR', error)
+        
+        // 재시도 로직
+        if (state.retryCount < MAX_RETRIES) {
+          commit('INCREMENT_RETRY_COUNT')
+          console.log(`재시도 중... (${state.retryCount}/${MAX_RETRIES})`)
+          
+          setTimeout(() => {
+            dispatch('fetchAllNews')
+          }, RETRY_DELAY * state.retryCount) // 재시도마다 대기 시간 증가
+        } else {
+          commit('SET_ALL_NEWS', [])
+          commit('RESET_RETRY_COUNT')
+        }
       } finally {
         commit('SET_LOADING', false)
       }
     },
     
-    async fetchNewsByCategory({ commit }, category) {
+    async fetchNewsByCategory({ commit, state, dispatch }, category) {
+      if (state.loading) return
+      
       commit('SET_LOADING', true)
+      commit('SET_ERROR', null)
+      
       try {
         const response = await api.getNewsByCategory(category)
         
-        // API 응답이 HTML인 경우 처리
         if (response && typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-          console.error('API가 HTML 응답을 반환했습니다');
-          commit('SET_ERROR', new Error('API 응답 형식이 올바르지 않습니다'));
-          commit('SET_CATEGORY_NEWS', []);
-          return;
+          throw new Error('API가 HTML 응답을 반환했습니다')
         }
         
-        // 카테고리별 뉴스에도 중복 제거 로직 추가
+        if (!response.data || !response.data.news) {
+          throw new Error('API 응답 형식이 올바르지 않습니다')
+        }
+        
         const uniqueNewsMap = new Map()
         response.data.news.forEach(article => {
           const key = article.title
@@ -98,8 +127,22 @@ export default {
         uniqueNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
         
         commit('SET_CATEGORY_NEWS', uniqueNews)
+        commit('RESET_RETRY_COUNT')
       } catch (error) {
+        console.error('카테고리 뉴스 로딩 오류:', error)
         commit('SET_ERROR', error)
+        
+        if (state.retryCount < MAX_RETRIES) {
+          commit('INCREMENT_RETRY_COUNT')
+          console.log(`재시도 중... (${state.retryCount}/${MAX_RETRIES})`)
+          
+          setTimeout(() => {
+            dispatch('fetchNewsByCategory', category)
+          }, RETRY_DELAY * state.retryCount)
+        } else {
+          commit('SET_CATEGORY_NEWS', [])
+          commit('RESET_RETRY_COUNT')
+        }
       } finally {
         commit('SET_LOADING', false)
       }

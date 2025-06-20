@@ -81,10 +81,22 @@ export default {
   },
   created() {
     // 페이지 로드 시 바로 전체 뉴스 데이터 가져오기
-    this.fetchAllNews()
+    this.loadNews()
   },
   methods: {
-    ...mapActions('news', ['fetchAllNews'])
+    ...mapActions('news', ['fetchAllNews']),
+    
+    async loadNews() {
+      try {
+        await this.fetchAllNews()
+      } catch (error) {
+        console.error('뉴스 로딩 실패:', error)
+        // 3초 후 재시도
+        setTimeout(() => {
+          this.loadNews()
+        }, 3000)
+      }
+    }
   }
 }
 </script>
