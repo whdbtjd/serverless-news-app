@@ -111,8 +111,10 @@ export default {
 
 <style scoped>
 .header {
-  background-color: var(--primary-color);
-  color: var(--secondary-color);
+  background-color: var(--header-bg);
+  color: var(--header-text);
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .header-container {
@@ -129,8 +131,9 @@ export default {
 }
 
 .logo a {
-  color: var(--secondary-color);
+  color: var(--header-text);
   text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 .search-box {
@@ -139,9 +142,12 @@ export default {
 
 .search-box input {
   padding: 8px 12px;
-  border: none;
+  border: 1px solid var(--border-color);
   border-radius: 4px 0 0 4px;
   min-width: 250px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
 }
 
 .search-box button {
@@ -151,15 +157,15 @@ export default {
   color: white;
   cursor: pointer;
   border-radius: 0 4px 4px 0;
+  transition: background-color 0.3s ease;
 }
 
 .category-nav {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--nav-bg);
   padding: 10px 0;
   width: 100%;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s ease;
 }
 
 .category-container {
@@ -174,12 +180,11 @@ export default {
   overflow-x: auto;
   white-space: nowrap;
   scrollbar-width: thin;
-  -ms-overflow-style: none;  /* IE와 Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
   padding-bottom: 5px;
 }
 
-/* Chrome, Safari, Opera에서 스크롤바 숨기기 */
 .nav-scroll-container::-webkit-scrollbar {
   display: none;
 }
@@ -189,75 +194,39 @@ export default {
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: 10px;
-  flex-wrap: nowrap;
-  flex: 1;
-  justify-content: space-between;
-  position: relative;
-  padding-right: 0;
-}
-
-.category-list::after {
-  display: none; /* 구분선 제거 */
-}
-
-.category-nav li {
-  position: relative;
-  flex: 1;
-  text-align: center;
+  gap: 20px;
 }
 
 .category-nav a {
-  color: var(--secondary-color);
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;
-  display: block;
   padding: 6px 12px;
   border-radius: 4px;
-  transition: all 0.2s;
-  white-space: nowrap;
-  position: relative;
-  letter-spacing: 0.5px;
-  width: 100%;
+  transition: all 0.3s ease;
 }
 
 .category-nav a:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: translateY(-1px);
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
 }
 
 .category-nav a.router-link-active {
   color: var(--accent-color);
-  font-weight: bold;
-  background-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.category-nav a.router-link-active::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: var(--accent-color);
-  border-radius: 2px;
+  background-color: var(--bg-tertiary);
 }
 
 .auth-container {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0;
-  margin-left: 0;
-  padding-left: 10px;
-  position: relative;
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid var(--border-color);
 }
 
 .auth-loading {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
+  color: var(--text-secondary);
 }
 
 .user-info {
@@ -267,9 +236,7 @@ export default {
 }
 
 .welcome-text {
-  color: var(--secondary-color);
-  font-size: 14px;
-  white-space: nowrap;
+  color: var(--text-secondary);
 }
 
 .login-form {
@@ -283,85 +250,70 @@ export default {
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.2s;
-  white-space: nowrap;
+  transition: all 0.3s ease;
 }
 
-.login-btn {
+.login-btn, .logout-btn {
   background-color: var(--accent-color);
   color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.signup-btn {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: var(--secondary-color);
-}
-
-.logout-btn {
-  background-color: var(--accent-color);
-  color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.profile-btn {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: var(--secondary-color);
-  margin-right: 8px;
-  display: inline-block;
-  text-decoration: none;
-}
-
-.login-btn:hover, .signup-btn:hover, .logout-btn:hover, .profile-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.login-btn:active, .signup-btn:active, .logout-btn:active, .profile-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+.signup-btn, .profile-btn {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .forgot-password-link {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
   font-size: 12px;
   text-decoration: none;
-  margin-top: 5px;
-  display: block;
-  text-align: center;
 }
 
 .forgot-password-link:hover {
-  color: var(--secondary-color);
-  text-decoration: underline;
+  color: var(--text-primary);
 }
 
 /* 반응형 스타일 */
 @media (max-width: 768px) {
   .header-container {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 15px;
   }
   
   .search-box {
-    margin-top: 15px;
     width: 100%;
   }
   
   .search-box input {
-    flex-grow: 1;
+    flex: 1;
+    min-width: 0;
   }
   
-  .login-form input {
-    width: 100px;
+  .auth-container {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    justify-content: center;
+  }
+  
+  .category-list {
+    gap: 10px;
   }
 }
 
-/* 더 작은 모바일 화면용 */
 @media (max-width: 480px) {
-  .login-form input {
-    width: 80px;
+  .auth-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .login-form {
+    flex-direction: column;
+  }
+  
+  .login-btn, .signup-btn, .logout-btn, .profile-btn {
+    width: 100%;
   }
 }
 </style>
