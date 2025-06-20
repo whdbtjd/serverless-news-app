@@ -1,12 +1,12 @@
 <template>
   <button 
     class="theme-toggle" 
-    :title="isDark ? '라이트 모드로 전환' : '다크 모드로 전환'"
+    :title="isDarkTheme ? '라이트 모드로 전환' : '다크 모드로 전환'"
     @click="toggleTheme"
   >
     <!-- 라이트 모드 아이콘 -->
     <svg 
-      v-if="isDark"
+      v-if="isDarkTheme"
       class="theme-icon"
       xmlns="http://www.w3.org/2000/svg" 
       width="20" 
@@ -30,20 +30,15 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { useTheme } from '@/composables/useTheme';
 
 export default {
   name: 'ThemeToggle',
   setup() {
-    const isDark = ref(false);
-
-    const toggleTheme = () => {
-      isDark.value = !isDark.value;
-      // 실제 테마 변경 로직은 3단계에서 구현
-    };
+    const { isDarkTheme, toggleTheme } = useTheme();
 
     return {
-      isDark,
+      isDarkTheme,
       toggleTheme
     };
   }

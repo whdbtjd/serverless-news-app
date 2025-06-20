@@ -1,12 +1,22 @@
 <template>
   <div id="app">
+    <ThemeToggle class="theme-toggle-position" />
     <router-view></router-view>
   </div>
 </template>
 
 <script>
+import ThemeToggle from '@/components/ThemeToggle.vue';
+import { useTheme } from '@/composables/useTheme';
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    ThemeToggle
+  },
+  setup() {
+    useTheme(); // 테마 초기화
+  }
 }
 </script>
 
@@ -25,6 +35,13 @@ body {
 #app {
   min-height: 100vh;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.theme-toggle-position {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
 }
 
 a {
