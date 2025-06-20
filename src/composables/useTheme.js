@@ -2,6 +2,7 @@ import { ref, onMounted, watch } from 'vue';
 
 const THEME_KEY = 'theme-preference';
 const isDarkTheme = ref(false);
+const isOriginalTheme = ref(false);
 
 export function useTheme() {
   // 시스템 테마 감지
@@ -13,12 +14,28 @@ export function useTheme() {
   const applyTheme = (theme) => {
     document.documentElement.setAttribute('data-theme', theme);
     isDarkTheme.value = theme === 'dark';
+    isOriginalTheme.value = theme === 'original';
     localStorage.setItem(THEME_KEY, theme);
   };
 
-  // 테마 전환
+  // 테마 순환 (dark -> light -> original)
   const toggleTheme = () => {
-    const newTheme = isDarkTheme.value ? 'light' : 'dark';
+    const currentTheme = localStorage.getItem(THEME_KEY) || getSystemTheme();
+    let newTheme;
+    
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'original';
+        break;
+      case 'original':
+        newTheme = 'dark';
+        break;
+      case 'dark':
+      default:
+        newTheme = 'light';
+        break;
+    }
+    
     applyTheme(newTheme);
   };
 
@@ -46,6 +63,7 @@ export function useTheme() {
 
   return {
     isDarkTheme,
+    isOriginalTheme,
     toggleTheme
   };
 } 
