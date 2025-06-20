@@ -2,12 +2,12 @@ import { ref, onMounted, watch } from 'vue';
 
 const THEME_KEY = 'theme-preference';
 const isDarkTheme = ref(false);
-const isOriginalTheme = ref(false);
+const isOriginalTheme = ref(true);
 
 export function useTheme() {
   // 시스템 테마 감지
   const getSystemTheme = () => {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return 'original';
   };
 
   // 테마 적용
@@ -18,21 +18,21 @@ export function useTheme() {
     localStorage.setItem(THEME_KEY, theme);
   };
 
-  // 테마 순환 (dark -> light -> original)
+  // 테마 순환 (original -> dark -> light)
   const toggleTheme = () => {
     const currentTheme = localStorage.getItem(THEME_KEY) || getSystemTheme();
     let newTheme;
     
     switch (currentTheme) {
-      case 'light':
-        newTheme = 'original';
-        break;
       case 'original':
         newTheme = 'dark';
         break;
       case 'dark':
-      default:
         newTheme = 'light';
+        break;
+      case 'light':
+      default:
+        newTheme = 'original';
         break;
     }
     
@@ -51,7 +51,7 @@ export function useTheme() {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     mediaQuery.addEventListener('change', (e) => {
       if (!localStorage.getItem(THEME_KEY)) {
-        applyTheme(e.matches ? 'dark' : 'light');
+        applyTheme('original');
       }
     });
   };
