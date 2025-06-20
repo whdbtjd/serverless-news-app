@@ -41,9 +41,10 @@ export function useTheme() {
 
   // 초기 테마 설정
   const initializeTheme = () => {
-    const savedTheme = localStorage.getItem(THEME_KEY);
-    const theme = savedTheme || getSystemTheme();
-    applyTheme(theme);
+    // localStorage 초기화
+    localStorage.removeItem(THEME_KEY);
+    // 항상 original 테마로 시작
+    applyTheme('original');
   };
 
   // 시스템 테마 변경 감지
