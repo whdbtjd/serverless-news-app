@@ -52,20 +52,45 @@ export default {
       commit('SET_ERROR', null)
       
       try {
-        const response = await api.getAllNews()
+        // 전체 뉴스 먼저 가져오기
+        const allNewsResponse = await api.getAllNews()
+        let allNews = []
         
-        // API 응답이 HTML인 경우 처리
-        if (response && typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-          throw new Error('API가 HTML 응답을 반환했습니다')
+        // 전체 뉴스 데이터 처리
+        if (allNewsResponse && allNewsResponse.data && allNewsResponse.data.news) {
+          allNews = allNewsResponse.data.news
         }
         
-        if (!response.data || !response.data.news) {
-          throw new Error('API 응답 형식이 올바르지 않습니다')
-        }
+        // 모든 카테고리의 뉴스를 가져오기
+        const categories = ['business', 'entertainment', 'general', 'science', 'sports', 'technology']
+        const categoryResponses = await Promise.all(
+          categories.map(category => 
+            api.getNewsByCategory(category)
+              .then(response => {
+                if (response && response.data && response.data.news) {
+                  return response.data.news.map(article => ({
+                    ...article,
+                    category
+                  }))
+                }
+                return []
+              })
+              .catch(error => {
+                console.error(`${category} 카테고리 로딩 오류:`, error)
+                return []
+              })
+          )
+        )
         
-        // 중복 제거 로직
+        // 카테고리별 뉴스 합치기
+        const categoryNews = categoryResponses.flat()
+        
+        // 전체 뉴스와 카테고리별 뉴스 합치기
+        const combinedNews = [...allNews, ...categoryNews]
+        
+        // 중복 제거 로직 (제목만으로 중복 체크)
         const uniqueNewsMap = new Map()
-        response.data.news.forEach(article => {
+        combinedNews.forEach(article => {
           const key = article.title
           if (!uniqueNewsMap.has(key)) {
             uniqueNewsMap.set(key, article)
@@ -81,14 +106,13 @@ export default {
         console.error('뉴스 로딩 오류:', error)
         commit('SET_ERROR', error)
         
-        // 재시도 로직
         if (state.retryCount < MAX_RETRIES) {
           commit('INCREMENT_RETRY_COUNT')
           console.log(`재시도 중... (${state.retryCount}/${MAX_RETRIES})`)
           
           setTimeout(() => {
             dispatch('fetchAllNews')
-          }, RETRY_DELAY * state.retryCount) // 재시도마다 대기 시간 증가
+          }, RETRY_DELAY * state.retryCount)
         } else {
           commit('SET_ALL_NEWS', [])
           commit('RESET_RETRY_COUNT')

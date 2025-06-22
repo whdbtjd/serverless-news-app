@@ -52,8 +52,8 @@ export default {
     
     filteredNews() {
       if (!this.searchQuery) {
-        // 검색어가 없으면 최신 12개 뉴스 표시
-        return this.allNews.slice(0, 12)
+        // 검색어가 없으면 모든 뉴스 표시
+        return this.allNews
       }
       
       // 검색어가 있으면 제목, 설명, 출처에서 검색
