@@ -7,7 +7,9 @@
 
 
 
-해외 뉴스 api를 활용한 클라우드 네이티브 애플리케이션 개발 중 입니다.
+aws 관리형 서비스를 활용한 서버리스 애플리케이션입니다.
+
+최종 완성본: https://dyka4bt0wa4co.cloudfront.net
 
 <br>
 <br>
