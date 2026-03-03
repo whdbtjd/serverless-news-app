@@ -2,7 +2,7 @@ import json
 import boto3
 import os
 from boto3.dynamodb.conditions import Key
-
+   
 # DynamoDB 클라이언트 초기화
 dynamodb = boto3.resource('dynamodb')
 table_name = os.environ.get('DYNAMODB_TABLE')
