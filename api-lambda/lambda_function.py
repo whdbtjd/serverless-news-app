@@ -136,5 +136,5 @@ def error_response(message):
     return {
         'statusCode': 500,
         'headers': get_cors_headers(),
-        'body': json.dumps({'message': message})
+        'body': json.dumps({'message': message}) 
     }
