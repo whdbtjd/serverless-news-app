@@ -1,0 +1,18 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+      nodejs: 20
+  build:
+    commands:
+      - echo "람다 및 Vue 빌드 시작..."
+      - cd news-lambda && pip install -r requirements.txt -t . && zip -r ../news.zip . && cd ..
+      - cd api-lambda && pip install -r requirements.txt -t . && zip -r ../api.zip . && cd ..
+      - cd vue-s3 && npm install && npm run build && cd ..
+  post_build:
+    commands:
+      - echo "배포 진행 중..."
+      - aws lambda update-function-code --function-name NewsCollector --zip-file fileb://news.zip
+      - aws lambda update-function-code --function-name NewsCollectorAPI --zip-file fileb://api.zip
+      - aws s3 sync vue-s3/dist s3://serverless-news-app --delete
