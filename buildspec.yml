@@ -10,7 +10,7 @@ phases:
       - cd news-lambda && pip install -r requirements.txt -t . && zip -r ../news.zip . && cd ..
       - cd api-lambda && pip install -r requirements.txt -t . && zip -r ../api.zip . && cd ..
       - cd vue-s3 && npm install && npm run build && cd ..
-  post_build:
+  post_build: 
     commands:
       - echo "배포 진행 중..."
       - aws lambda update-function-code --function-name NewsCollector --zip-file fileb://news.zip
