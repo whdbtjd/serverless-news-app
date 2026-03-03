@@ -1,4 +1,5 @@
 version: 0.2
+
 phases:
   install:
     runtime-versions:
@@ -6,14 +7,30 @@ phases:
       nodejs: 20
   build:
     commands:
-      - echo "람다 및 Vue 빌드 시작..."
+      - echo "1. 환경 변수 파일(.env) 생성 중..."
+      - cd vue-s3
+      - |
+        echo "VITE_APP_TITLE=Global News Forum" > .env
+        echo "VITE_API_BASE_URL=https://mqbxttuqra.execute-api.ap-northeast-2.amazonaws.com/dev" >> .env
+        echo "VITE_COGNITO_USER_POOL_ID=ap-northeast-2_ADoTJ84dE" >> .env
+        echo "VITE_COGNITO_APP_CLIENT_ID=4skqlu07jmajt1si8p15q8k15a" >> .env
+        echo "VITE_COGNITO_REGION=ap-northeast-2" >> .env
+      - echo "2. Vue 프로젝트 빌드 시작..."
+      - npm install
+      - npm run build
+      - cd ..
+
+      - echo "3. Lambda 함수 빌드 중..."
       - cd news-lambda && pip install -r requirements.txt -t . && zip -r ../news.zip . && cd ..
       - cd api-lambda && pip install -r requirements.txt -t . && zip -r ../api.zip . && cd ..
-      - cd vue-s3 && npm install && npm run build && cd ..
-  post_build: 
+
+  post_build:
     commands:
-      - echo "배포 진행 중..."
+      - echo "4. 최종 배포 진행 중..."
+      # Lambda 업데이트
       - aws lambda update-function-code --function-name NewsCollector --zip-file fileb://news.zip
       - aws lambda update-function-code --function-name NewsCollectorAPI --zip-file fileb://api.zip
+      # S3 동기화
       - aws s3 sync vue-s3/dist s3://serverless-news-app --delete
+      # CloudFront 캐시 무효화 (자동 반영)
       - aws cloudfront create-invalidation --distribution-id E3RLF4LKC6EZSE --paths "/*"
