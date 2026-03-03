@@ -1,0 +1,381 @@
+import { 
+  CognitoUserPool,
+  CognitoUserAttribute,
+  CognitoUser,
+  AuthenticationDetails
+} from 'amazon-cognito-identity-js'
+
+// Cognito 설정
+const poolData = {
+  UserPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID || 'ap-northeast-2_ADoTJ84dE',
+  ClientId: import.meta.env.VITE_COGNITO_APP_CLIENT_ID || '4skq1u07jmajt1si8p15q8k15a'
+}
+
+console.log('Cognito 설정:', {
+  UserPoolId: poolData.UserPoolId,
+  ClientId: poolData.ClientId
+})
+
+const userPool = new CognitoUserPool(poolData)
+
+/**
+ * 회원가입 함수
+ * @param {string} username - 사용자 이름(이메일)
+ * @param {string} password - 비밀번호
+ * @param {string} nickname - 닉네임 (선택)
+ * @returns {Promise} - 회원가입 결과 Promise
+ */
+export const signUp = (username, password, nickname = '') => {
+  return new Promise((resolve, reject) => {
+    // 속성 목록 생성
+    const attributeList = []
+    
+    // 이메일 속성 추가 (필수)
+    const emailAttribute = new CognitoUserAttribute({
+      Name: 'email',
+      Value: username
+    })
+    attributeList.push(emailAttribute)
+    
+    // 닉네임 속성 추가 (선택적)
+    if (nickname) {
+      const nicknameAttribute = new CognitoUserAttribute({
+        Name: 'nickname',
+        Value: nickname
+      })
+      attributeList.push(nicknameAttribute)
+    }
+    
+    // 회원가입 요청
+    userPool.signUp(
+      username, 
+      password, 
+      attributeList, 
+      null, 
+      (err, result) => {
+        if (err) {
+          console.error('회원가입 오류:', err)
+          reject(err)
+          return
+        }
+        
+        console.log('회원가입 성공:', result)
+        resolve(result.user)
+      }
+    )
+  })
+}
+
+/**
+ * 로그인 함수
+ * @param {string} username - 사용자 이름(이메일)
+ * @param {string} password - 비밀번호
+ * @returns {Promise} - 로그인 결과 Promise
+ */
+export const signIn = (username, password) => {
+  return new Promise((resolve, reject) => {
+    // 인증 데이터 생성
+    const authenticationData = {
+      Username: username,
+      Password: password
+    }
+    
+    const authenticationDetails = new AuthenticationDetails(authenticationData)
+    
+    // 사용자 객체 생성
+    const userData = {
+      Username: username,
+      Pool: userPool
+    }
+    
+    const cognitoUser = new CognitoUser(userData)
+    
+    // 로그인 요청
+    cognitoUser.authenticateUser(authenticationDetails, {
+      onSuccess: (session) => {
+        console.log('로그인 성공:', session)
+        resolve(session)
+      },
+      onFailure: (err) => {
+        console.error('로그인 오류:', err)
+        reject(err)
+      }
+    })
+  })
+}
+
+/**
+ * 로그아웃 함수
+ */
+export const signOut = () => {
+  const currentUser = userPool.getCurrentUser()
+  if (currentUser) {
+    currentUser.signOut()
+    console.log('로그아웃 되었습니다')
+    return true
+  }
+  return false
+}
+
+/**
+ * 현재 사용자 확인
+ * @returns {Promise} - 현재 사용자 정보 Promise
+ */
+export const getCurrentUser = () => {
+  return new Promise((resolve, reject) => {
+    const currentUser = userPool.getCurrentUser()
+    
+    if (!currentUser) {
+      resolve(null)
+      return
+    }
+    
+    currentUser.getSession((err, session) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      
+      if (!session.isValid()) {
+        resolve(null)
+        return
+      }
+      
+      // 사용자 속성 가져오기
+      currentUser.getUserAttributes((err, attributes) => {
+        if (err) {
+          resolve({
+            username: currentUser.getUsername(),
+            email: currentUser.getUsername(),
+            isAuthenticated: true
+          })
+          return
+        }
+        
+        // 속성 매핑
+        const userData = {
+          username: currentUser.getUsername(),
+          email: currentUser.getUsername(),
+          isAuthenticated: true
+        }
+        
+        if (attributes) {
+          attributes.forEach(attr => {
+            userData[attr.Name] = attr.Value
+          })
+        }
+        
+        resolve(userData)
+      })
+    })
+  })
+}
+
+/**
+ * 이메일 인증 코드 확인 함수
+ * @param {string} username - 사용자 이름(이메일)
+ * @param {string} code - 인증 코드
+ * @returns {Promise} - 확인 결과 Promise
+ */
+export const confirmSignUp = (username, code) => {
+  return new Promise((resolve, reject) => {
+    const userData = {
+      Username: username,
+      Pool: userPool
+    }
+    
+    const cognitoUser = new CognitoUser(userData)
+    
+    cognitoUser.confirmRegistration(code, true, (err, result) => {
+      if (err) {
+        console.error('이메일 확인 오류:', err)
+        reject(err)
+        return
+      }
+      
+      console.log('이메일 확인 성공:', result)
+      resolve(result)
+    })
+  })
+}
+
+/**
+ * 비밀번호 찾기 - 재설정 코드 요청 함수
+ * @param {string} username - 사용자 이름(이메일)
+ * @returns {Promise} - 재설정 코드 요청 결과 Promise
+ */
+export const forgotPassword = (username) => {
+  return new Promise((resolve, reject) => {
+    const userData = {
+      Username: username,
+      Pool: userPool
+    }
+    
+    const cognitoUser = new CognitoUser(userData)
+    
+    cognitoUser.forgotPassword({
+      onSuccess: (data) => {
+        console.log('비밀번호 재설정 코드 요청 성공:', data)
+        resolve(data)
+      },
+      onFailure: (err) => {
+        console.error('비밀번호 재설정 코드 요청 오류:', err)
+        reject(err)
+      }
+    })
+  })
+}
+
+/**
+ * 비밀번호 재설정 함수
+ * @param {string} username - 사용자 이름(이메일)
+ * @param {string} code - 인증 코드
+ * @param {string} newPassword - 새 비밀번호
+ * @returns {Promise} - 비밀번호 재설정 결과 Promise
+ */
+export const confirmNewPassword = (username, code, newPassword) => {
+  return new Promise((resolve, reject) => {
+    const userData = {
+      Username: username,
+      Pool: userPool
+    }
+    
+    const cognitoUser = new CognitoUser(userData)
+    
+    cognitoUser.confirmPassword(code, newPassword, {
+      onSuccess: () => {
+        console.log('비밀번호 재설정 성공')
+        resolve(true)
+      },
+      onFailure: (err) => {
+        console.error('비밀번호 재설정 오류:', err)
+        reject(err)
+      }
+    })
+  })
+}
+
+/**
+ * 사용자 속성 업데이트 함수 (닉네임 변경)
+ * @param {string} nickname - 새 닉네임
+ * @returns {Promise} - 속성 업데이트 결과 Promise
+ */
+export const updateUserAttributes = (nickname) => {
+  return new Promise((resolve, reject) => {
+    const currentUser = userPool.getCurrentUser()
+    
+    if (!currentUser) {
+      reject(new Error('로그인이 필요합니다'))
+      return
+    }
+    
+    currentUser.getSession((err, session) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      
+      const attributeList = []
+      
+      // 닉네임 속성 추가
+      const nicknameAttribute = new CognitoUserAttribute({
+        Name: 'nickname',
+        Value: nickname
+      })
+      attributeList.push(nicknameAttribute)
+      
+      currentUser.updateAttributes(attributeList, (err, result) => {
+        if (err) {
+          console.error('속성 업데이트 오류:', err)
+          reject(err)
+          return
+        }
+        
+        console.log('속성 업데이트 성공:', result)
+        resolve(result)
+      })
+    })
+  })
+}
+
+/**
+ * 비밀번호 변경 함수 (로그인된 상태에서)
+ * @param {string} oldPassword - 현재 비밀번호
+ * @param {string} newPassword - 새 비밀번호
+ * @returns {Promise} - 비밀번호 변경 결과 Promise
+ */
+export const changePassword = (oldPassword, newPassword) => {
+  return new Promise((resolve, reject) => {
+    const currentUser = userPool.getCurrentUser()
+    
+    if (!currentUser) {
+      reject(new Error('로그인이 필요합니다'))
+      return
+    }
+    
+    currentUser.getSession((err) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      
+      currentUser.changePassword(oldPassword, newPassword, (err, result) => {
+        if (err) {
+          console.error('비밀번호 변경 오류:', err)
+          reject(err)
+          return
+        }
+        
+        console.log('비밀번호 변경 성공:', result)
+        resolve(result)
+      })
+    })
+  })
+}
+
+/**
+ * 회원탈퇴 함수
+ * @returns {Promise} - 회원탈퇴 결과 Promise
+ */
+export const deleteUser = () => {
+  return new Promise((resolve, reject) => {
+    const currentUser = userPool.getCurrentUser()
+    
+    if (!currentUser) {
+      reject(new Error('로그인이 필요합니다'))
+      return
+    }
+    
+    currentUser.getSession((err, session) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      
+      currentUser.deleteUser((err, result) => {
+        if (err) {
+          console.error('회원탈퇴 오류:', err)
+          reject(err)
+          return
+        }
+        
+        console.log('회원탈퇴 성공:', result)
+        resolve(result)
+      })
+    })
+  })
+}
+
+export default {
+  signUp,
+  signIn,
+  signOut,
+  getCurrentUser,
+  confirmSignUp,
+  forgotPassword,
+  confirmNewPassword,
+  updateUserAttributes,
+  changePassword,
+  deleteUser,
+  userPool
+} 
