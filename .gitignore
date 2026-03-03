@@ -9,3 +9,7 @@ env/
 build/
 dist/
 *.egg-info/
+
+# news-lambda 내부의 설치된 패키지들 무시
+news-lambda/*/
+news-lambda/*.dist-info/
