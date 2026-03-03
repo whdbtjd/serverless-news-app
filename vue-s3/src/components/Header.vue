@@ -2,7 +2,7 @@
   <header class="header">
     <div class="container header-container">
       <h1 class="logo">
-        <router-link to="/">Global News Forum</router-link>
+        <router-link to="/">Global News Forum 빌드 테스트 중</router-link>
       </h1>
       <div class="search-box">
         <input
