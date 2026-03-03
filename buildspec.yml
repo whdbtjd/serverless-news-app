@@ -16,3 +16,4 @@ phases:
       - aws lambda update-function-code --function-name NewsCollector --zip-file fileb://news.zip
       - aws lambda update-function-code --function-name NewsCollectorAPI --zip-file fileb://api.zip
       - aws s3 sync vue-s3/dist s3://serverless-news-app --delete
+      - aws cloudfront create-invalidation --distribution-id E3RLF4LKC6EZSE --paths "/*"
