@@ -2,7 +2,7 @@
   <header class="header">
     <div class="container header-container">
       <h1 class="logo">
-        <router-link to="/">Global News Forum 빌드 테스트 중</router-link>
+        <router-link to="/">Global News Forum</router-link>
       </h1>
       <div class="search-box">
         <input
@@ -33,7 +33,7 @@
             </div>
             <div v-else-if="userStore.state.isAuthenticated" class="user-info">
               <span class="welcome-text">
-                {{ userStore.state.user?.nickname || userStore.state.user?.email }} 님
+                {{ userStore.state.user?.nickname || userStore.state.user?.email }}
               </span>
               <router-link to="/profile" class="profile-btn">내 정보</router-link>
               <button class="logout-btn" @click="handleLogout">로그아웃</button>
